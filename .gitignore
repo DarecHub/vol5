@@ -1,0 +1,21 @@
+# Citlivé soubory s credentials
+.env
+config.php
+docs.md
+config.php
+
+# PHP dependencies
+vendor/
+
+# Logy a cache
+*.log
+/logs/
+
+# OS soubory
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
