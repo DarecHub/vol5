@@ -32,7 +32,8 @@ switch ($action) {
 
         $sql = "
             SELECT we.*,
-                   u.name AS paid_by_name
+                   u.name AS paid_by_name,
+                   u.avatar AS paid_by_avatar
             FROM wallet_expenses we
             LEFT JOIN users u ON we.paid_by = u.id
             $where
