@@ -12,7 +12,9 @@ $db = getDB();
 renderHeader('Posádky', 'crews');
 ?>
 
-<h1 class="page-title">&#9973; Posádky</h1>
+<h1 class="page-title">
+    <i data-lucide="users" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Posádky
+</h1>
 
 <div class="card-grid">
     <?php foreach ($boats as $b):

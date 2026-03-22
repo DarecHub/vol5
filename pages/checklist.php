@@ -18,8 +18,12 @@ renderHeader('Co s sebou', 'checklist');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#9989; Co s sebou</h1>
-    <button class="btn btn-success" onclick="openAddChecklist()">+ Přidat</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="check-square" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Co s sebou
+    </h1>
+    <button class="btn btn-success" onclick="openAddChecklist()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat
+    </button>
 </div>
 
 <div id="checklistContainer">

@@ -94,13 +94,15 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Zavření modalu klávesou Escape
+// Zavření modalu/menu klávesou Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.open').forEach(m => {
             m.classList.remove('open');
         });
         document.body.style.overflow = '';
+        const menu = document.getElementById('mobileMenu');
+        if (menu && menu.classList.contains('open')) toggleMobileMenu();
     }
 });
 
@@ -110,10 +112,26 @@ document.addEventListener('keydown', function(e) {
 
 function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
-    if (menu) {
-        menu.classList.toggle('open');
+    if (!menu) return;
+    const isOpen = menu.classList.contains('open');
+    if (isOpen) {
+        menu.classList.remove('open');
+    } else {
+        menu.classList.add('open');
     }
 }
+
+// Swipe dolů zavře mobilní menu
+document.addEventListener('DOMContentLoaded', function() {
+    const menu = document.getElementById('mobileMenu');
+    const content = menu && menu.querySelector('.mobile-menu-content');
+    if (!content) return;
+    let startY = 0;
+    content.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+    content.addEventListener('touchend', e => {
+        if (e.changedTouches[0].clientY - startY > 60) toggleMobileMenu();
+    }, { passive: true });
+});
 
 // ============================================================
 // TABY

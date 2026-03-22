@@ -80,11 +80,15 @@ function isAdmin(): bool
 }
 
 /**
- * Vyžaduje přihlášení – pokud není přihlášen, přesměruje na login
+ * Vyžaduje přihlášení – pokud není přihlášen, přesměruje na login.
+ * Pro AJAX požadavky vrátí JSON chybu místo redirect (302 není parsovatelný).
  */
 function requireLogin(): void
 {
     if (!isLoggedIn() && !isAdmin()) {
+        if (isAjax()) {
+            jsonResponse(false, null, 'Přihlášení vypršelo. Obnovte stránku.');
+        }
         setFlash('error', 'Pro přístup se musíte přihlásit.');
         redirect('/index.php');
     }

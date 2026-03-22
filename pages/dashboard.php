@@ -39,7 +39,9 @@ $balance = $paidTotal - $shareTotal;
 renderHeader('Dashboard', 'dashboard');
 ?>
 
-<h1 class="page-title">Ahoj, <?= e(currentUserName()) ?>!</h1>
+<h1 class="page-title">
+    <i data-lucide="anchor" style="width:22px;height:22px;vertical-align:middle;margin-right:6px;color:var(--accent);"></i>Ahoj, <?= e(currentUserName()) ?>!
+</h1>
 
 <!-- Odpočet -->
 <?php if ($tripDateFrom): ?>
@@ -94,35 +96,35 @@ document.addEventListener('DOMContentLoaded', function() {
 <h2 class="section-title mt-3">Sekce</h2>
 <div class="nav-cards">
     <a href="/pages/wallet.php" class="nav-card">
-        <span class="nav-card-icon">&#128176;</span>
+        <i data-lucide="wallet" class="nav-card-icon"></i>
         Pokladna
     </a>
     <a href="/pages/itinerary.php" class="nav-card">
-        <span class="nav-card-icon">&#128506;</span>
+        <i data-lucide="map" class="nav-card-icon"></i>
         Itinerář
     </a>
     <a href="/pages/crews.php" class="nav-card">
-        <span class="nav-card-icon">&#9973;</span>
+        <i data-lucide="users" class="nav-card-icon"></i>
         Posádky
     </a>
     <a href="/pages/shopping.php" class="nav-card">
-        <span class="nav-card-icon">&#128722;</span>
+        <i data-lucide="shopping-cart" class="nav-card-icon"></i>
         Nákupy
     </a>
     <a href="/pages/menu.php" class="nav-card">
-        <span class="nav-card-icon">&#127858;</span>
+        <i data-lucide="utensils" class="nav-card-icon"></i>
         Jídelníček
     </a>
     <a href="/pages/checklist.php" class="nav-card">
-        <span class="nav-card-icon">&#9989;</span>
+        <i data-lucide="check-square" class="nav-card-icon"></i>
         Co s sebou
     </a>
     <a href="/pages/logbook.php" class="nav-card">
-        <span class="nav-card-icon">&#128214;</span>
+        <i data-lucide="book-open" class="nav-card-icon"></i>
         Deník
     </a>
     <a href="/pages/cars.php" class="nav-card">
-        <span class="nav-card-icon">&#128663;</span>
+        <i data-lucide="car" class="nav-card-icon"></i>
         Auta
     </a>
 </div>

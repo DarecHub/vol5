@@ -20,12 +20,16 @@ renderHeader('Pokladna', 'wallet');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128176; Pokladna</h1>
-    <button class="btn btn-success" onclick="openAddExpenseModal()">+ Přidat výdaj</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="wallet" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--accent);"></i>Pokladna
+    </h1>
+    <button class="btn btn-success" onclick="openAddExpenseModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat výdaj
+    </button>
 </div>
 
 <!-- Statistiky nahoře -->
-<div class="card-grid" style="grid-template-columns: 1fr;">
+<div class="wallet-stats-row">
     <div class="stat-card accent">
         <div class="stat-card-value" id="totalExpenses">–</div>
         <div class="stat-card-label">Celkové výdaje</div>
@@ -35,7 +39,8 @@ renderHeader('Pokladna', 'wallet');
         <div class="stat-card-label">Moje bilance</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-value text-sm" id="exchangeRate">–</div>
+        <div class="stat-card-value text-sm" id="exchangeRate" style="font-size:1rem;">–</div>
+        <div class="stat-card-label">Kurz EUR/CZK</div>
     </div>
 </div>
 
@@ -49,20 +54,22 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Výdaje -->
 <div class="tab-panel active" id="tab-expenses" data-tab-panel="wallet">
     <!-- Filtr -->
-    <div class="mb-2">
-        <select class="form-control" id="expenseFilter" onchange="loadExpenses()" style="max-width: 200px; display: inline-block;">
+    <div class="expense-filter-row mb-2">
+        <select class="form-control" id="expenseFilter" onchange="loadExpenses()">
             <option value="all">Všechny výdaje</option>
             <option value="mine">Jen moje</option>
             <?php foreach ($boats as $b): ?>
                 <option value="boat<?= $b['id'] ?>"><?= e($b['name']) ?></option>
             <?php endforeach; ?>
         </select>
-        <a href="/api/export.php" class="btn btn-outline btn-sm" style="margin-left: 8px;" target="_blank">&#128196; Export PDF</a>
+        <a href="/api/export.php" class="btn btn-outline btn-sm" target="_blank">
+            <i data-lucide="file-text" style="width:14px;height:14px;"></i> Export
+        </a>
     </div>
 
-    <div class="card" id="expensesList" style="position: relative; padding: 0;">
+    <div id="expensesList" style="position: relative;">
         <div id="expensesBody">
-            <p class="text-center text-muted" style="padding: 16px;">Načítám...</p>
+            <p class="text-center text-muted" style="padding: 32px;">Načítám...</p>
         </div>
     </div>
 </div>
@@ -187,30 +194,7 @@ renderHeader('Pokladna', 'wallet');
     </div>
 </div>
 
-<style>
-.amount-pill {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    line-height: 1.6;
-}
-.amount-pill-eur {
-    background: var(--primary);
-    color: #fff;
-}
-.amount-pill-czk {
-    background: #276749;
-    color: #fff;
-}
-.amount-pill-sub {
-    font-size: 0.72rem;
-    color: var(--gray-500);
-    margin-right: 6px;
-}
-</style>
+
 
 <script>
 const currentUserId = <?= json_encode($userId) ?>;
@@ -240,31 +224,42 @@ async function loadExpenses() {
     const expenses = res.data.expenses;
     const expensesBody = document.getElementById('expensesBody');
     if (expenses.length === 0) {
-        expensesBody.innerHTML = '<p class="text-center text-muted" style="padding: 16px;">Žádné výdaje.</p>';
+        expensesBody.innerHTML = '<div class="empty-state"><div class="empty-state-icon" style="font-size:2.5rem;">💸</div><p>Žádné výdaje.</p></div>';
     } else {
-        const expensesBody = document.getElementById('expensesBody');
         expensesBody.innerHTML = expenses.map(e => {
             const p = e.expense_date.split(/[- :]/);
-            const datum = parseInt(p[2]) + '. ' + parseInt(p[1]) + '. ' + p[3] + ':' + p[4];
+            const datum = parseInt(p[2]) + '. ' + parseInt(p[1]) + '. ' + p[0];
             const pillClass = e.currency === 'CZK' ? 'amount-pill-czk' : 'amount-pill-eur';
             const castka = (e.currency === 'CZK' ? `<span class="amount-pill-sub">(${formatMoney(e.amount_eur)})</span>` : '')
                 + `<span class="amount-pill ${pillClass}">${formatMoney(e.amount, e.currency)}</span>`;
-            return `<div style="padding: 6px 14px; border-bottom: 1px solid #cbd5e0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:600;">${escapeHtml(e.paid_by_name)}</span>
-                    <span style="display:flex; gap:3px;">
-                        <button class="btn btn-outline btn-sm" onclick="editExpense(${e.id})">&#9998;</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">&#10005;</button>
-                        <button class="btn btn-outline btn-sm" onclick="showAudit(${e.id})" title="Historie">&#128340;</button>
-                    </span>
+            return `<div class="expense-card">
+                <div class="expense-card-header">
+                    <div class="expense-card-who">
+                        <span class="expense-card-avatar">${escapeHtml(e.paid_by_name.charAt(0))}</span>
+                        <div>
+                            <div class="fw-semi">${escapeHtml(e.paid_by_name)}</div>
+                            <div class="text-sm text-muted">${datum}</div>
+                        </div>
+                    </div>
+                    <div class="expense-card-amount">${castka}</div>
                 </div>
-                <div style="font-size:0.85rem; color:#718096;">${datum}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:#000;">${escapeHtml(e.description)}</span>
-                    <span style="text-align:right;">${castka}</span>
+                <div class="expense-card-footer">
+                    <span class="expense-card-desc">${escapeHtml(e.description)}</span>
+                    <div class="expense-card-actions">
+                        <button class="icon-btn" onclick="editExpense(${e.id})" title="Upravit">
+                            <i data-lucide="pencil" style="width:15px;height:15px;"></i>
+                        </button>
+                        <button class="icon-btn icon-btn-danger" onclick="deleteExpense(${e.id})" title="Smazat">
+                            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+                        </button>
+                        <button class="icon-btn" onclick="showAudit(${e.id})" title="Historie">
+                            <i data-lucide="clock" style="width:15px;height:15px;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>`;
         }).join('');
+        lucide.createIcons();
     }
 
     loadMyBalance();

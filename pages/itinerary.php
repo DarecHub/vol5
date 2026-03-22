@@ -20,7 +20,9 @@ $typeIcons = [
 renderHeader('Itinerář', 'itinerary');
 ?>
 
-<h1 class="page-title">&#128506; Itinerář</h1>
+<h1 class="page-title">
+    <i data-lucide="map" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Itinerář
+</h1>
 
 <?php if (empty($itinerary)): ?>
     <div class="empty-state">

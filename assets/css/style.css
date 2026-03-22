@@ -177,7 +177,12 @@ img { max-width: 100%; height: auto; }
     font-weight: 600;
 }
 
-.sidebar-icon { font-size: 1.15rem; width: 24px; text-align: center; }
+.sidebar-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke-width: 1.75;
+}
 
 .sidebar-divider {
     border: none;
@@ -209,17 +214,19 @@ img { max-width: 100%; height: auto; }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
     color: var(--gray-400);
     text-decoration: none;
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 6px 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 6px 0;
+    flex: 1;
     border: none;
     background: none;
     cursor: pointer;
     font-family: inherit;
     transition: color 0.15s;
+    letter-spacing: 0.01em;
 }
 
 .bottom-nav-item:hover,
@@ -228,7 +235,17 @@ img { max-width: 100%; height: auto; }
     text-decoration: none;
 }
 
-.bottom-nav-icon { font-size: 1.4rem; line-height: 1; }
+.bottom-nav-icon {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.75;
+    transition: transform 0.15s;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    stroke-width: 2.25;
+}
+
 .bottom-nav-label { line-height: 1; }
 
 /* ============================================================
@@ -236,19 +253,23 @@ img { max-width: 100%; height: auto; }
    ============================================================ */
 
 .mobile-menu {
-    display: none;
     position: fixed;
     inset: 0;
     z-index: 200;
+    pointer-events: none;
 }
 
-.mobile-menu.open { display: block; }
+.mobile-menu.open { pointer-events: all; }
 
 .mobile-menu-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.45);
+    opacity: 0;
+    transition: opacity 0.25s ease;
 }
+
+.mobile-menu.open .mobile-menu-overlay { opacity: 1; }
 
 .mobile-menu-content {
     position: absolute;
@@ -256,27 +277,89 @@ img { max-width: 100%; height: auto; }
     left: 0;
     right: 0;
     background: white;
-    border-radius: 16px 16px 0 0;
-    padding: 16px 0 8px;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-    max-height: 60vh;
-    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    padding: 0 0 8px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.mobile-menu-link {
-    display: block;
-    padding: 14px 24px;
-    color: var(--gray-700);
-    font-size: 1rem;
-    font-weight: 500;
+.mobile-menu.open .mobile-menu-content { transform: translateY(0); }
+
+/* Drag handle */
+.mobile-menu-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--gray-300);
+    border-radius: 2px;
+    margin: 12px auto 16px;
+}
+
+/* Grid tiles místo seznam odkazů */
+.mobile-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 16px 12px;
+}
+
+.mobile-menu-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 12px;
+    color: var(--gray-600);
+    font-size: 0.78rem;
+    font-weight: 600;
     text-decoration: none;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.mobile-menu-link:hover {
     background: var(--gray-50);
+    transition: all 0.15s;
+    text-align: center;
+}
+
+.mobile-menu-tile:hover,
+.mobile-menu-tile.active {
+    background: #ebf4ff;
+    color: var(--primary);
     text-decoration: none;
 }
+
+.mobile-menu-tile-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.75;
+}
+
+.mobile-menu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-top: 1px solid var(--gray-100);
+    font-size: 0.82rem;
+}
+
+.mobile-menu-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.mobile-menu-logout {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--danger);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.82rem;
+}
+
+.mobile-menu-logout:hover { text-decoration: underline; }
 
 /* ============================================================
    MAIN CONTENT
@@ -585,39 +668,62 @@ select.form-control {
    ============================================================ */
 
 .modal-overlay {
-    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.5);
     z-index: 300;
-    align-items: center;
+    display: flex;
+    align-items: flex-end;
     justify-content: center;
-    padding: 16px;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
 }
 
-.modal-overlay.open { display: flex; }
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
 
 .modal {
     background: white;
-    border-radius: var(--radius);
+    border-radius: 20px 20px 0 0;
     width: 100%;
-    max-width: 540px;
-    max-height: 90vh;
+    max-width: 100%;
+    max-height: 92vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
-    animation: modalSlide 0.2s ease;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    overscroll-behavior: contain;
+}
+
+.modal-overlay.open .modal {
+    transform: translateY(0);
+}
+
+/* Drag handle na modalech */
+.modal::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--gray-300);
+    border-radius: 2px;
+    margin: 10px auto 0;
 }
 
 .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 12px 20px 16px;
     border-bottom: 1px solid var(--gray-200);
 }
 
 .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--primary);
 }
@@ -625,14 +731,23 @@ select.form-control {
 .modal-close {
     background: none;
     border: none;
-    font-size: 1.4rem;
     cursor: pointer;
     color: var(--gray-400);
     padding: 4px;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
 }
 
-.modal-close:hover { color: var(--gray-700); }
+.modal-close:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
 
 .modal-body { padding: 20px; }
 
@@ -642,6 +757,32 @@ select.form-control {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+    /* Bezpečná zóna pro iPhone X+ */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+/* Desktop – klasické centrované modaly */
+@media (min-width: 640px) {
+    .modal-overlay {
+        align-items: center;
+        padding: 16px;
+    }
+
+    .modal {
+        border-radius: var(--radius);
+        max-width: 560px;
+        transform: scale(0.95);
+    }
+
+    .modal-overlay.open .modal {
+        transform: scale(1);
+    }
+
+    .modal::before { display: none; }
+
+    .modal-footer {
+        padding-bottom: 16px;
+    }
 }
 
 /* ============================================================
@@ -874,6 +1015,117 @@ select.form-control {
 .balance-positive { color: var(--success); font-weight: 700; }
 .balance-negative { color: var(--danger); font-weight: 700; }
 
+.wallet-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.expense-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-filter-row .form-control {
+    flex: 1;
+    max-width: 200px;
+}
+
+/* Expense cards */
+.expense-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    transition: box-shadow 0.15s;
+}
+
+.expense-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+.expense-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.expense-card-who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-card-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.expense-card-amount {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.expense-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.expense-card-desc {
+    font-size: 0.88rem;
+    color: var(--gray-600);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expense-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Icon buttons */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.icon-btn:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.icon-btn-danger:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
 .settlement-item {
     display: flex;
     align-items: center;
@@ -1048,7 +1300,12 @@ select.form-control {
     text-decoration: none;
 }
 
-.nav-card-icon { font-size: 1.8rem; }
+.nav-card-icon {
+    width: 28px;
+    height: 28px;
+    stroke-width: 1.5;
+    color: var(--primary-light);
+}
 
 /* ============================================================
    ANIMATIONS
@@ -1109,6 +1366,24 @@ select.form-control {
         max-width: 1200px;
     }
 }
+
+/* ============================================================
+   AMOUNT PILLS (wallet)
+   ============================================================ */
+
+.amount-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+.amount-pill-eur { background: var(--primary); color: #fff; }
+.amount-pill-czk { background: #276749; color: #fff; }
+.amount-pill-sub { font-size: 0.72rem; color: var(--gray-500); margin-right: 4px; }
 
 /* ============================================================
    ADMIN SPECIFIC

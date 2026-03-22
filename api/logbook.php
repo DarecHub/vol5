@@ -46,8 +46,8 @@ switch ($action) {
         $locationFrom = trim($_POST['location_from'] ?? '');
         $locationTo = trim($_POST['location_to'] ?? '');
         $nm = (float) ($_POST['nautical_miles'] ?? 0);
-        $departure = $_POST['departure_time'] ?: null;
-        $arrival = $_POST['arrival_time'] ?: null;
+        $departure = ($_POST['departure_time'] ?? '') ?: null;
+        $arrival = ($_POST['arrival_time'] ?? '') ?: null;
         $skipper = (int) ($_POST['skipper_user_id'] ?? 0) ?: null;
         $note = trim($_POST['note'] ?? '');
 
@@ -72,6 +72,14 @@ switch ($action) {
         requireCsrf();
         $id = (int) ($_POST['id'] ?? 0);
         if ($id < 1) jsonResponse(false, null, 'Neplatný záznam.');
+
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM logbook WHERE id = ?");
+        $check->execute([$id]);
+        $logRow = $check->fetch();
+        if (!$logRow || (currentBoatId() !== null && $logRow['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
+        }
 
         try {
             $stmt = $db->prepare("
@@ -101,6 +109,14 @@ switch ($action) {
         requireCsrf();
         $id = (int) ($_POST['id'] ?? 0);
         if ($id < 1) jsonResponse(false, null, 'Neplatný záznam.');
+
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM logbook WHERE id = ?");
+        $check->execute([$id]);
+        $logRow = $check->fetch();
+        if (!$logRow || (currentBoatId() !== null && $logRow['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
+        }
 
         try {
             $db->prepare("DELETE FROM logbook WHERE id = ?")->execute([$id]);

@@ -12,8 +12,12 @@ renderHeader('Auta', 'cars');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128663; Auta</h1>
-    <button class="btn btn-success" onclick="openAddCarModal()">+ Přidat auto</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="car" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Auta
+    </h1>
+    <button class="btn btn-success" onclick="openAddCarModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat auto
+    </button>
 </div>
 
 <!-- Seznam aut -->

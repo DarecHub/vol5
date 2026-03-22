@@ -23,8 +23,12 @@ renderHeader('Nákupní seznamy', 'shopping');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128722; Nákupní seznam</h1>
-    <button class="btn btn-success" onclick="openAddItemModal()">+ Přidat</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="shopping-cart" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Nákupní seznam
+    </h1>
+    <button class="btn btn-success" onclick="openAddItemModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat
+    </button>
 </div>
 
 <!-- Záložky lodí -->

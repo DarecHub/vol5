@@ -31,7 +31,9 @@ renderHeader('Jídelníček', 'menu');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#127858; Jídelníček</h1>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="utensils" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Jídelníček
+    </h1>
 </div>
 
 <!-- Záložky lodí -->

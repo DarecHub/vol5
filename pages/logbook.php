@@ -13,8 +13,12 @@ renderHeader('Deník plavby', 'logbook');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128214; Deník plavby</h1>
-    <button class="btn btn-success" onclick="openAddLogModal()">+ Přidat zápis</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="book-open" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Deník plavby
+    </h1>
+    <button class="btn btn-success" onclick="openAddLogModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat zápis
+    </button>
 </div>
 
 <!-- Záložky lodí -->

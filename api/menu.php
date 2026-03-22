@@ -70,6 +70,14 @@ switch ($action) {
             jsonResponse(false, null, 'Neplatný záznam.');
         }
 
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM menu_plan WHERE id = ?");
+        $check->execute([$id]);
+        $menuRow = $check->fetch();
+        if (!$menuRow || (currentBoatId() !== null && $menuRow['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
+        }
+
         $stmt = $db->prepare("UPDATE menu_plan SET cook_user_id = ?, meal_description = ?, note = ? WHERE id = ?");
         $stmt->execute([$cookUserId, $mealDescription ?: null, $note ?: null, $id]);
 
@@ -81,6 +89,14 @@ switch ($action) {
         $id = (int) ($_POST['id'] ?? 0);
         if ($id < 1) {
             jsonResponse(false, null, 'Neplatný záznam.');
+        }
+
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM menu_plan WHERE id = ?");
+        $check->execute([$id]);
+        $menuRow = $check->fetch();
+        if (!$menuRow || (currentBoatId() !== null && $menuRow['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
         }
 
         $db->prepare("DELETE FROM menu_plan WHERE id = ?")->execute([$id]);

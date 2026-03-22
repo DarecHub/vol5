@@ -236,8 +236,8 @@ $tripName = getSetting('trip_name', 'Plavba');
         <?php endif; ?>
 
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('member')">Posádka</button>
-            <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
+            <button class="tab-btn active" onclick="switchTab('member', this)">Posádka</button>
+            <button class="tab-btn" onclick="switchTab('admin', this)">Admin</button>
         </div>
 
         <!-- Členské přihlášení -->
@@ -292,11 +292,11 @@ $tripName = getSetting('trip_name', 'Plavba');
     </div>
 
     <script>
-    function switchTab(tab) {
+    function switchTab(tab, el) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
-        event.target.classList.add('active');
+        el.classList.add('active');
     }
     </script>
 </body>
