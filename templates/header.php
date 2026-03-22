@@ -6,6 +6,8 @@
     <title><?= e($title) ?> – <?= e($tripName) ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
     <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="/assets/js/lucide.min.js"></script>
+    <script src="/assets/js/app.js"></script>
 </head>
 <body>
     <!-- Horní lišta -->

@@ -94,7 +94,7 @@ if ($tripDateTo) {
             $isMine = $m['id'] == $userId;
             $color = $isMine ? 'accent' : $boatColorClass;
         ?>
-            <div style="display:flex;align-items:center;gap:5px;">
+            <div style="display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="openMemberModal(<?= (int)$m['id'] ?>)">
                 <?= avatarHtml($m, 'sm', $color) ?>
                 <span style="font-size:0.75rem;color:var(--gray-600);font-weight:<?= $isMine ? '700' : '500' ?>;"><?= e($m['name']) ?></span>
             </div>

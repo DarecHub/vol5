@@ -182,6 +182,13 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function getInitials(name) {
+    const parts = (name || '').trim().split(' ');
+    let i = parts[0].charAt(0).toUpperCase();
+    if (parts.length > 1) i += parts[parts.length - 1].charAt(0).toUpperCase();
+    return i;
+}
+
 function formatMoney(amount, currency) {
     currency = currency || 'EUR';
     return parseFloat(amount).toFixed(2).replace('.', ',') + ' ' + currency;

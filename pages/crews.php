@@ -48,7 +48,7 @@ function crewInitials(string $name): string {
                 <?php foreach ($members as $m):
                     $isMine = $m['id'] == $userId;
                 ?>
-                    <div class="crew-member">
+                    <div class="crew-member" onclick="openMemberModal(<?= (int)$m['id'] ?>)" style="cursor:pointer;">
                         <?= avatarHtml($m, 'md', $isMine ? 'accent' : $colorClass) ?>
                         <div style="flex:1;min-width:0;">
                             <div class="crew-member-name"><?= e($m['name']) ?><?= $isMine ? ' <span class="badge badge-accent" style="font-size:.7rem;">já</span>' : '' ?></div>

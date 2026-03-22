@@ -210,12 +210,7 @@ function getCategoryIcon(cat) {
     return categoryIcons[cat] || 'circle-dot';
 }
 
-function getInitials(name) {
-    const parts = name.trim().split(' ');
-    let i = parts[0].charAt(0).toUpperCase();
-    if (parts.length > 1) i += parts[parts.length - 1].charAt(0).toUpperCase();
-    return i;
-}
+// getInitials() je definováno globálně v app.js
 
 // ============================================================
 // NAČTENÍ VÝDAJŮ
@@ -254,8 +249,10 @@ async function loadExpenses() {
                        <i data-lucide="camera" style="width:15px;height:15px;"></i>
                    </button>`;
             const avatarHtml = e.paid_by_avatar
-                ? `<img src="/${escapeHtml(e.paid_by_avatar)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--gray-200);">`
-                : `<span style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${escapeHtml(getInitials(e.paid_by_name))}</span>`;
+                ? `<img src="/${escapeHtml(e.paid_by_avatar)}" onclick="openMemberModal(${e.paid_by})"
+                       style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--gray-200);cursor:pointer;">`
+                : `<span onclick="openMemberModal(${e.paid_by})"
+                         style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">${escapeHtml(getInitials(e.paid_by_name))}</span>`;
             return `<div class="expense-card">
                 <div class="expense-card-header">
                     <div class="expense-card-who">
