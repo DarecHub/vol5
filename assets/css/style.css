@@ -1386,6 +1386,518 @@ select.form-control {
 .amount-pill-sub { font-size: 0.72rem; color: var(--gray-500); margin-right: 4px; }
 
 /* ============================================================
+   INITIALS AVATAR
+   ============================================================ */
+
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    line-height: 1;
+    user-select: none;
+}
+
+.avatar-sm  { width: 28px; height: 28px; font-size: 0.68rem; }
+.avatar-md  { width: 36px; height: 36px; font-size: 0.85rem; }
+.avatar-lg  { width: 44px; height: 44px; font-size: 1rem; }
+
+.avatar-boat1   { background: linear-gradient(135deg, var(--boat1), #4299e1); }
+.avatar-boat2   { background: linear-gradient(135deg, var(--boat2), #48bb78); }
+.avatar-accent  { background: linear-gradient(135deg, var(--accent), #ed8936); }
+.avatar-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+.avatar-gray    { background: linear-gradient(135deg, var(--gray-500), var(--gray-400)); }
+
+/* ============================================================
+   FAB – Floating Action Button
+   ============================================================ */
+
+.fab {
+    position: fixed;
+    bottom: calc(var(--bottomnav-height) + 16px);
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+}
+
+@media (min-width: 768px) {
+    .fab { display: none; }
+}
+
+/* ============================================================
+   MINI PROGRESS BAR
+   ============================================================ */
+
+.progress-bar-wrap {
+    height: 6px;
+    background: var(--gray-100);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+.progress-bar-fill.primary  { background: var(--primary-light); }
+.progress-bar-fill.success  { background: var(--success); }
+.progress-bar-fill.danger   { background: var(--danger); }
+.progress-bar-fill.accent   { background: var(--accent); }
+
+/* ============================================================
+   STAT CARD WITH ICON
+   ============================================================ */
+
+.stat-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+}
+
+.stat-card-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-card-icon-wrap.primary { background: #ebf4ff; color: var(--primary-light); }
+.stat-card-icon-wrap.success { background: var(--success-bg); color: var(--success); }
+.stat-card-icon-wrap.danger  { background: var(--danger-bg); color: var(--danger); }
+.stat-card-icon-wrap.accent  { background: #fefcbf; color: var(--accent-dark); }
+.stat-card-icon-wrap.boat1   { background: #dbeafe; color: var(--boat1); }
+.stat-card-icon-wrap.boat2   { background: #dcfce7; color: var(--boat2); }
+
+.stat-card-info { flex: 1; min-width: 0; }
+
+.stat-card-inner .stat-card-value {
+    font-size: 1.5rem;
+}
+
+.stat-card-inner .stat-card-label {
+    margin-top: 2px;
+}
+
+/* ============================================================
+   BALANCE ROW CARDS
+   ============================================================ */
+
+.balance-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.balance-row:last-child { border-bottom: none; }
+
+.balance-row-info { flex: 1; min-width: 0; }
+
+.balance-row-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--gray-700);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.balance-row-sub {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    margin-top: 2px;
+}
+
+.balance-row-amount {
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* ============================================================
+   SETTLEMENT ITEM (enhanced)
+   ============================================================ */
+
+.settlement-item-v2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.settlement-item-v2 .settlement-names {
+    flex: 1;
+    min-width: 0;
+}
+
+.settlement-item-v2 .settlement-from { font-weight: 600; color: var(--gray-700); }
+.settlement-item-v2 .settlement-to   { font-size: 0.8rem; color: var(--gray-500); }
+
+.settlement-item-v2 .settlement-amount {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary);
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* ============================================================
+   SHOPPING ITEM CARDS
+   ============================================================ */
+
+.shop-item-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-100);
+    margin-bottom: 6px;
+    transition: border-color 0.15s;
+}
+
+.shop-item-card:hover { border-color: var(--gray-300); }
+
+.shop-item-card.bought {
+    opacity: 0.55;
+    background: var(--gray-50);
+}
+
+.shop-item-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gray-300);
+    border-radius: 5px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.shop-item-checkbox.checked {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.shop-item-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.shop-item-card.bought .shop-item-name {
+    text-decoration: line-through;
+    color: var(--gray-400);
+}
+
+.shop-item-qty {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.shop-category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.shop-category-header:first-child { margin-top: 0; }
+
+/* ============================================================
+   LOG ENTRY CARDS
+   ============================================================ */
+
+.log-entry-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-100);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+}
+
+.log-entry-card:hover { border-color: var(--gray-300); }
+
+.log-entry-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.log-entry-date-col {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 44px;
+}
+
+.log-entry-day {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.log-entry-month {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.log-entry-main { flex: 1; min-width: 0; }
+
+.log-entry-route {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--gray-700);
+}
+
+.log-entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.log-entry-nm {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.log-entry-note {
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* ============================================================
+   MENU DAY CARDS
+   ============================================================ */
+
+.menu-day-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-100);
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.menu-day-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--primary);
+}
+
+.menu-day-body {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-day-cook {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.menu-day-meal {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+}
+
+.menu-day-empty {
+    font-size: 0.85rem;
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+/* ============================================================
+   CHECKLIST ACCORDION
+   ============================================================ */
+
+.cl-section {
+    margin-bottom: 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.cl-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--gray-50);
+    cursor: pointer;
+    user-select: none;
+    border: none;
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.cl-section-header:hover { background: var(--gray-100); }
+
+.cl-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary);
+}
+
+.cl-section-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
+
+.cl-chevron {
+    transition: transform 0.2s;
+}
+
+.cl-section.collapsed .cl-chevron { transform: rotate(-90deg); }
+
+.cl-section-body {
+    padding: 8px 16px 12px;
+}
+
+.cl-section.collapsed .cl-section-body { display: none; }
+
+.cl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+}
+
+.cl-item:last-child { border-bottom: none; }
+
+.cl-item-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gray-300);
+    border-radius: 5px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+}
+
+.cl-item.checked .cl-item-check {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.cl-item-content { flex: 1; min-width: 0; }
+
+.cl-item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    line-height: 1.3;
+}
+
+.cl-item.checked .cl-item-name {
+    text-decoration: line-through;
+    color: var(--gray-400);
+}
+
+.cl-item-desc {
+    font-size: 0.78rem;
+    color: var(--gray-400);
+    margin-top: 2px;
+}
+
+.cl-item-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.cl-item:hover .cl-item-actions { opacity: 1; }
+
+/* ============================================================
    ADMIN SPECIFIC
    ============================================================ */
 

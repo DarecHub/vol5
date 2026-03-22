@@ -77,20 +77,8 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Bilance -->
 <div class="tab-panel" id="tab-balances" data-tab-panel="wallet">
     <div class="card" id="balancesCard">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Jméno</th>
-                        <th class="text-right">Zaplatil</th>
-                        <th class="text-right">Jeho podíl</th>
-                        <th class="text-right">Bilance</th>
-                    </tr>
-                </thead>
-                <tbody id="balancesBody">
-                    <tr><td colspan="4" class="text-center text-muted">Načítám...</td></tr>
-                </tbody>
-            </table>
+        <div id="balancesBody">
+            <p class="text-center text-muted" style="padding:24px;">Načítám...</p>
         </div>
     </div>
 </div>
@@ -98,7 +86,10 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Vyrovnání -->
 <div class="tab-panel" id="tab-settlements" data-tab-panel="wallet">
     <div class="card">
-        <div class="card-header">Optimalizované vyrovnání</div>
+        <div class="card-header" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="arrow-right-left" style="width:16px;height:16px;color:var(--accent);"></i>
+            Optimalizované vyrovnání
+        </div>
         <div id="settlementsList">
             <p class="text-muted">Načítám...</p>
         </div>
@@ -203,6 +194,29 @@ const allUsers = <?= json_encode(array_map(fn($u) => ['id' => $u['id'], 'name' =
 let editingExpenseId = null;
 let currentRate = 25;
 
+// Ikony dle kategorie výdaje
+const categoryIcons = {
+    'fuel':     'fuel',
+    'food':     'utensils',
+    'marina':   'anchor',
+    'shopping': 'shopping-bag',
+    'other':    'circle-dot',
+    'alcohol':  'wine',
+    'transport':'bus',
+    'activity': 'zap',
+};
+
+function getCategoryIcon(cat) {
+    return categoryIcons[cat] || 'circle-dot';
+}
+
+function getInitials(name) {
+    const parts = name.trim().split(' ');
+    let i = parts[0].charAt(0).toUpperCase();
+    if (parts.length > 1) i += parts[parts.length - 1].charAt(0).toUpperCase();
+    return i;
+}
+
 // ============================================================
 // NAČTENÍ VÝDAJŮ
 // ============================================================
@@ -232,13 +246,19 @@ async function loadExpenses() {
             const pillClass = e.currency === 'CZK' ? 'amount-pill-czk' : 'amount-pill-eur';
             const castka = (e.currency === 'CZK' ? `<span class="amount-pill-sub">(${formatMoney(e.amount_eur)})</span>` : '')
                 + `<span class="amount-pill ${pillClass}">${formatMoney(e.amount, e.currency)}</span>`;
+            const catIcon = getCategoryIcon(e.category || 'other');
             return `<div class="expense-card">
                 <div class="expense-card-header">
                     <div class="expense-card-who">
-                        <span class="expense-card-avatar">${escapeHtml(e.paid_by_name.charAt(0))}</span>
-                        <div>
-                            <div class="fw-semi">${escapeHtml(e.paid_by_name)}</div>
-                            <div class="text-sm text-muted">${datum}</div>
+                        <div class="expense-card-avatar" style="background:none;width:auto;height:auto;flex-direction:row;gap:6px;">
+                            <span style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${escapeHtml(getInitials(e.paid_by_name))}</span>
+                            <div>
+                                <div class="fw-semi">${escapeHtml(e.paid_by_name)}</div>
+                                <div class="text-sm text-muted">${datum}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="width:28px;height:28px;border-radius:8px;background:var(--gray-100);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}"><i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--gray-500);"></i></span>
                         </div>
                     </div>
                     <div class="expense-card-amount">${castka}</div>
@@ -293,17 +313,25 @@ async function loadBalances() {
     const res = await apiCall('/api/wallet.php?action=balances');
     if (!res.success) return;
 
-    const tbody = document.getElementById('balancesBody');
-    tbody.innerHTML = res.data.map(b => `
-        <tr>
-            <td class="fw-semi">${escapeHtml(b.name).replace(' ', '<br>')}</td>
-            <td class="text-right">${formatMoney(b.paid)}</td>
-            <td class="text-right">${formatMoney(b.share)}</td>
-            <td class="text-right fw-bold ${b.balance >= 0 ? 'balance-positive' : 'balance-negative'}">
-                ${(b.balance >= 0 ? '+' : '') + formatMoney(b.balance)}
-            </td>
-        </tr>
-    `).join('');
+    const maxPaid = Math.max(...res.data.map(b => b.paid), 1);
+    const container = document.getElementById('balancesBody');
+    container.innerHTML = res.data.map(b => {
+        const pct = Math.min(100, Math.round(b.paid / maxPaid * 100));
+        const isPos = b.balance >= 0;
+        const balStr = (isPos ? '+' : '') + formatMoney(b.balance);
+        const initials = getInitials(b.name);
+        return `<div class="balance-row">
+            <span class="avatar avatar-md avatar-${b.boat_id == 2 ? 'boat2' : 'boat1'}">${escapeHtml(initials)}</span>
+            <div class="balance-row-info">
+                <div class="balance-row-name">${escapeHtml(b.name)}</div>
+                <div class="balance-row-sub">zaplatil ${formatMoney(b.paid)} · podíl ${formatMoney(b.share)}</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill ${isPos ? 'success' : 'danger'}" style="width:${pct}%;"></div>
+                </div>
+            </div>
+            <div class="balance-row-amount ${isPos ? 'balance-positive' : 'balance-negative'}">${balStr}</div>
+        </div>`;
+    }).join('');
 }
 
 // ============================================================
@@ -318,27 +346,29 @@ async function loadSettlements() {
     const rate = res.data.rate;
 
     if (settlements.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>Všechny účty jsou vyrovnané!</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--success);margin-bottom:8px;"></i><p>Všechny účty jsou vyrovnané!</p></div>';
+        lucide.createIcons();
     } else {
         container.innerHTML = settlements.map(s => {
-            const settledClass = s.settled ? 'opacity: 0.4; text-decoration: line-through;' : '';
-            const settledBtnText = s.settled ? 'Zrušit' : 'Vyrovnáno';
+            const settledStyle = s.settled ? 'opacity:0.45;' : '';
+            const settledBtnText = s.settled ? 'Zrušit' : 'Hotovo';
             const settledBtnClass = s.settled ? 'btn-outline' : 'btn-success';
-            return `<div class="settlement-item" style="${settledClass}">
-                <div style="flex: 1;">
-                    <div>
-                        <span class="fw-semi">${escapeHtml(s.from_name)}</span>
-                        <span class="settlement-arrow">&rarr;</span>
-                        <span class="fw-semi">${escapeHtml(s.to_name)}</span>
-                    </div>
-                    <div class="mt-1">
-                        <span class="fw-bold text-accent">${formatMoney(s.amount)}</span>
-                        <span class="text-muted text-sm" style="margin-left: 8px;">(${formatMoney(s.amount_czk, 'CZK')})</span>
-                    </div>
+            return `<div class="settlement-item-v2" style="${settledStyle}">
+                <span class="avatar avatar-sm avatar-primary">${escapeHtml(getInitials(s.from_name))}</span>
+                <i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
+                <span class="avatar avatar-sm avatar-boat2">${escapeHtml(getInitials(s.to_name))}</span>
+                <div class="settlement-names">
+                    <div class="settlement-from">${escapeHtml(s.from_name)}</div>
+                    <div class="settlement-to">→ ${escapeHtml(s.to_name)}</div>
+                </div>
+                <div class="settlement-amount">
+                    <div>${formatMoney(s.amount)}</div>
+                    <div style="font-size:0.75rem;color:var(--gray-500);font-weight:500;">${formatMoney(s.amount_czk, 'CZK')}</div>
                 </div>
                 <button class="btn ${settledBtnClass} btn-sm" onclick="toggleSettle(${s.from_id}, ${s.to_id}, ${s.settled ? 0 : 1})">${settledBtnText}</button>
             </div>`;
         }).join('');
+        lucide.createIcons();
     }
 }
 

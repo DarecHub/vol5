@@ -19,6 +19,15 @@ $categoryNames = [
     'ostatni' => 'Ostatní',
 ];
 
+$categoryIcons = [
+    'potraviny' => 'apple',
+    'napoje'    => 'coffee',
+    'alkohol'   => 'wine',
+    'hygiena'   => 'heart',
+    'lekarna'   => 'pill',
+    'ostatni'   => 'package',
+];
+
 renderHeader('Nákupní seznamy', 'shopping');
 ?>
 
@@ -26,54 +35,47 @@ renderHeader('Nákupní seznamy', 'shopping');
     <h1 class="page-title" style="margin-bottom: 0;">
         <i data-lucide="shopping-cart" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Nákupní seznam
     </h1>
-    <button class="btn btn-success" onclick="openAddItemModal()">
+    <!-- Tlačítko Přidat jen na desktopu; mobil má FAB -->
+    <button class="btn btn-success" style="display:none;" id="addItemBtnDesktop" onclick="openAddItemModal()">
         <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat
     </button>
 </div>
 
-<!-- Záložky lodí -->
+<!-- Záložky lodí s ikonou -->
 <div class="tabs">
     <?php foreach ($boats as $b): ?>
         <button class="tab-btn boat<?= $b['id'] ?> <?= $b['id'] == $currentBoatId ? 'active' : '' ?>"
                 data-tab-group="shopping" data-tab-id="boat-<?= $b['id'] ?>"
                 onclick="switchBoat(<?= $b['id'] ?>)">
-            <?= e($b['name']) ?>
+            <i data-lucide="sailboat" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i><?= e($b['name']) ?>
         </button>
     <?php endforeach; ?>
 </div>
 
 <!-- Filtr kategorie -->
-<div class="mb-2">
-    <select class="form-control" id="categoryFilter" onchange="loadItems()" style="max-width: 200px;">
+<div class="mb-2" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <select class="form-control" id="categoryFilter" onchange="loadItems()" style="max-width:200px;">
         <option value="">Všechny kategorie</option>
         <?php foreach ($categoryNames as $k => $v): ?>
             <option value="<?= $k ?>"><?= e($v) ?></option>
         <?php endforeach; ?>
     </select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--gray-600);">
+        <input type="checkbox" id="hideBoughtFilter" onchange="loadItems()">
+        Skrýt koupené
+    </label>
 </div>
 
-<!-- Seznam položek -->
-<div class="card" id="shoppingList" style="position: relative;">
-    <div class="table-responsive">
-        <table class="table" id="shoppingTable">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">&#10004;</th>
-                    <th>Položka</th>
-                    <th>Množství</th>
-                    <th>Kategorie</th>
-                    <th>Kdo kupuje</th>
-                    <th>Cena</th>
-                    <th>Akce</th>
-                </tr>
-            </thead>
-            <tbody id="shoppingBody">
-                <tr><td colspan="7" class="text-center text-muted">Načítám...</td></tr>
-            </tbody>
-        </table>
-    </div>
-    <div id="shoppingSummary" class="mt-1 text-sm text-muted"></div>
+<!-- Seznam položek jako cards -->
+<div id="shoppingList" style="position:relative;">
+    <div id="shoppingBody"><p class="text-center text-muted" style="padding:24px;">Načítám...</p></div>
+    <div id="shoppingSummary" class="text-sm text-muted mt-1"></div>
 </div>
+
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddItemModal()" title="Přidat položku">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
 
 <!-- Modal přidání/editace -->
 <div class="modal-overlay" id="itemModal">
@@ -138,12 +140,19 @@ renderHeader('Nákupní seznamy', 'shopping');
 
 <script>
 const categoryNames = <?= json_encode($categoryNames) ?>;
+const categoryIcons = <?= json_encode($categoryIcons) ?>;
 let currentBoat = <?= json_encode($currentBoatId) ?>;
 let editingItemId = null;
 
+// Ukázat desktop tlačítko Přidat (FAB je pro mobil, ale na desktopu FAB skrytý)
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('addItemBtnDesktop');
+    if (btn) btn.style.display = '';
+    lucide.createIcons();
+});
+
 function switchBoat(boatId) {
     currentBoat = boatId;
-    // Aktualizuj taby vizuálně
     document.querySelectorAll('[data-tab-group="shopping"]').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab-id="boat-' + boatId + '"]').classList.add('active');
     loadItems();
@@ -151,6 +160,7 @@ function switchBoat(boatId) {
 
 async function loadItems() {
     const category = document.getElementById('categoryFilter').value;
+    const hideBought = document.getElementById('hideBoughtFilter').checked;
     const container = document.getElementById('shoppingList');
     showLoading(container);
 
@@ -163,35 +173,58 @@ async function loadItems() {
     }
 
     let items = res.data.items;
-    if (category) {
-        items = items.filter(i => i.category === category);
-    }
+    if (category) items = items.filter(i => i.category === category);
+    if (hideBought) items = items.filter(i => i.is_bought != 1);
 
-    const tbody = document.getElementById('shoppingBody');
+    const container2 = document.getElementById('shoppingBody');
+
     if (items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Žádné položky.</td></tr>';
+        container2.innerHTML = '<div class="empty-state"><i data-lucide="shopping-cart" style="width:36px;height:36px;color:var(--gray-300);margin-bottom:8px;"></i><p>Žádné položky.</p></div>';
+        lucide.createIcons();
     } else {
-        tbody.innerHTML = items.map(item => {
-            const boughtClass = item.is_bought == 1 ? 'style="opacity: 0.5; text-decoration: line-through;"' : '';
-            return `<tr ${boughtClass}>
-                <td><input type="checkbox" ${item.is_bought == 1 ? 'checked' : ''} onchange="toggleBought(${item.id}, this.checked)"></td>
-                <td class="fw-semi">${escapeHtml(item.item_name)}</td>
-                <td>${escapeHtml(item.quantity || '–')}</td>
-                <td><span class="badge badge-gray">${escapeHtml(categoryNames[item.category] || item.category)}</span></td>
-                <td>${item.assigned_to_name ? escapeHtml(item.assigned_to_name) : '<span class="text-muted">–</span>'}</td>
-                <td>${item.price ? formatMoney(item.price, item.currency) : '–'}</td>
-                <td>
-                    <button class="btn btn-outline btn-sm" onclick='editItem(${JSON.stringify(item)})'>&#9998;</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteItem(${item.id})">&#10005;</button>
-                </td>
-            </tr>`;
-        }).join('');
+        // Seskupit dle kategorie
+        const grouped = {};
+        items.forEach(item => {
+            const cat = item.category || 'ostatni';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(item);
+        });
+
+        let html = '';
+        for (const [cat, catItems] of Object.entries(grouped)) {
+            const catName = categoryNames[cat] || cat;
+            const catIcon = categoryIcons[cat] || 'package';
+            html += `<div class="shop-category-header">
+                <i data-lucide="${catIcon}" style="width:14px;height:14px;"></i>
+                ${escapeHtml(catName)}
+                <span style="margin-left:auto;font-weight:400;font-size:0.75rem;">${catItems.filter(i=>i.is_bought==1).length}/${catItems.length}</span>
+            </div>`;
+            html += catItems.map(item => {
+                const bought = item.is_bought == 1;
+                return `<div class="shop-item-card ${bought ? 'bought' : ''}" id="shop-item-${item.id}">
+                    <div class="shop-item-checkbox ${bought ? 'checked' : ''}" onclick="toggleBought(${item.id}, ${bought ? 0 : 1})">
+                        ${bought ? '<i data-lucide="check" style="width:12px;height:12px;"></i>' : ''}
+                    </div>
+                    <span class="shop-item-name">${escapeHtml(item.item_name)}</span>
+                    ${item.quantity ? `<span class="shop-item-qty">${escapeHtml(item.quantity)}</span>` : ''}
+                    ${item.assigned_to_name ? `<span style="font-size:.75rem;color:var(--gray-500);">${escapeHtml(item.assigned_to_name)}</span>` : ''}
+                    ${item.price ? `<span style="font-size:.78rem;font-weight:600;color:var(--primary);">${formatMoney(item.price,item.currency)}</span>` : ''}
+                    <button class="icon-btn" onclick='editItem(${JSON.stringify(item)})' title="Upravit">
+                        <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+                    </button>
+                    <button class="icon-btn icon-btn-danger" onclick="deleteItem(${item.id})" title="Smazat">
+                        <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+                    </button>
+                </div>`;
+            }).join('');
+        }
+        container2.innerHTML = html;
+        lucide.createIcons();
     }
 
-    // Souhrn
     const s = res.data.summary;
     document.getElementById('shoppingSummary').innerHTML =
-        `Celkem: ${s.total_items} položek (${s.bought_items} koupeno) | EUR: ${parseFloat(s.total_eur).toFixed(2)} | CZK: ${parseFloat(s.total_czk).toFixed(2)}`;
+        `${s.total_items} položek · ${s.bought_items} koupeno · EUR: ${parseFloat(s.total_eur).toFixed(2)} · CZK: ${parseFloat(s.total_czk).toFixed(2)}`;
 }
 
 function openAddItemModal() {
@@ -260,7 +293,7 @@ async function saveItem() {
 async function toggleBought(id, bought) {
     const res = await apiCall('/api/shopping.php?action=toggle_bought', 'POST', {
         id: id,
-        is_bought: bought ? 1 : 0,
+        is_bought: bought,
         price: ''
     });
     if (res.success) {

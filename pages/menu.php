@@ -36,48 +36,50 @@ renderHeader('Jídelníček', 'menu');
     </h1>
 </div>
 
-<!-- Záložky lodí -->
+<!-- Záložky lodí s ikonou -->
 <div class="tabs">
     <?php foreach ($boats as $b): ?>
         <button class="tab-btn boat<?= $b['id'] ?> <?= $b['id'] == $currentBoatId ? 'active' : '' ?>"
                 data-tab-group="menu" data-tab-id="menuboat-<?= $b['id'] ?>"
                 onclick="switchMenuBoat(<?= $b['id'] ?>)">
-            <?= e($b['name']) ?>
+            <i data-lucide="sailboat" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i><?= e($b['name']) ?>
         </button>
     <?php endforeach; ?>
 </div>
 
-<!-- Tabulka jídelníčku -->
-<div class="card" id="menuCard" style="position: relative;">
+<!-- Day cards -->
+<div id="menuCard" style="position:relative;">
     <?php if (empty($tripDays)): ?>
         <div class="empty-state">
+            <i data-lucide="calendar" style="width:36px;height:36px;color:var(--gray-300);margin-bottom:8px;"></i>
             <p>Nastavte datum plavby v administraci pro zobrazení jídelníčku.</p>
         </div>
     <?php else: ?>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Oběd</th>
-                    </tr>
-                </thead>
-                <tbody id="menuBody">
-                    <?php foreach ($tripDays as $day): ?>
-                        <tr>
-                            <td class="fw-semi" style="white-space: nowrap;">
-                                <?= czechDayName($day) ?><br>
-                                <span class="text-sm text-muted"><?= formatDate($day) ?></span>
-                            </td>
-                            <td class="menu-cell" id="cell-<?= $day ?>-obed"
-                                onclick="openMenuModal('<?= $day ?>', 'obed')"
-                                style="cursor: pointer; min-width: 120px;">
-                                <span class="text-muted text-sm">Klikni pro zápis</span>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div id="menuBody">
+            <?php foreach ($tripDays as $day):
+                $d = new DateTime($day);
+                $dayNum = $d->format('j');
+                $monthShort = $d->format('M');
+                $dayName = czechDayName($day);
+            ?>
+                <div class="menu-day-card">
+                    <div class="menu-day-header">
+                        <i data-lucide="calendar" style="width:14px;height:14px;color:var(--primary-light);"></i>
+                        <span><?= e($dayName) ?>, <?= e(formatDate($day)) ?></span>
+                    </div>
+                    <div class="menu-day-body">
+                        <i data-lucide="utensils" style="width:16px;height:16px;color:var(--gray-400);flex-shrink:0;"></i>
+                        <div class="menu-day-cook menu-cell" id="cell-<?= $day ?>-obed"
+                             onclick="openMenuModal('<?= $day ?>', 'obed')"
+                             style="cursor:pointer;flex:1;">
+                            <span class="menu-day-empty">Kdo vaří? Klikni pro zápis</span>
+                        </div>
+                        <button class="icon-btn" onclick="openMenuModal('<?= $day ?>', 'obed')" title="Zapsat">
+                            <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
@@ -144,7 +146,7 @@ async function loadMenuData() {
         menuData[key] = item;
     });
 
-    // Aktualizovat buňky
+    // Aktualizovat day-cards buňky
     document.querySelectorAll('.menu-cell').forEach(cell => {
         const parts = cell.id.replace('cell-', '').split(/-(?=[^-]+$)/);
         const date = parts[0];
@@ -153,14 +155,20 @@ async function loadMenuData() {
 
         if (menuData[key]) {
             const entry = menuData[key];
-            cell.innerHTML = '<span class="fw-semi">' + escapeHtml(entry.cook_name || '?') + '</span>' +
-                (entry.meal_description ? '<br><span class="text-sm text-muted">' + escapeHtml(entry.meal_description) + '</span>' : '');
-            cell.style.background = '#f0fff4';
+            const initials = entry.cook_name
+                ? entry.cook_name.trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2)
+                : '?';
+            cell.innerHTML =
+                `<span class="avatar avatar-sm avatar-primary" style="flex-shrink:0;">${escapeHtml(initials)}</span>
+                 <div>
+                   <span class="fw-semi" style="font-size:.88rem;">${escapeHtml(entry.cook_name || '?')}</span>
+                   ${entry.meal_description ? `<div style="font-size:.78rem;color:var(--gray-500);">${escapeHtml(entry.meal_description)}</div>` : ''}
+                 </div>`;
         } else {
-            cell.innerHTML = '<span class="text-muted text-sm">+</span>';
-            cell.style.background = '';
+            cell.innerHTML = '<span class="menu-day-empty">Kdo vaří? Klikni pro zápis</span>';
         }
     });
+    lucide.createIcons();
 }
 
 function openMenuModal(date, mealType) {

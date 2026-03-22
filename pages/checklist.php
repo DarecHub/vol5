@@ -7,10 +7,10 @@ require_once __DIR__ . '/../functions.php';
 requireLogin();
 
 $categoryNames = [
-    'povinne' => ['name' => 'Povinné', 'icon' => '&#10071;'],
-    'obleceni' => ['name' => 'Oblečení', 'icon' => '&#128085;'],
-    'vybaveni' => ['name' => 'Vybavení', 'icon' => '&#127890;'],
-    'doporucene' => ['name' => 'Doporučené', 'icon' => '&#128161;'],
+    'povinne'    => ['name' => 'Povinné',     'icon' => 'alert-circle'],
+    'obleceni'   => ['name' => 'Oblečení',    'icon' => 'shirt'],
+    'vybaveni'   => ['name' => 'Vybavení',    'icon' => 'backpack'],
+    'doporucene' => ['name' => 'Doporučené',  'icon' => 'lightbulb'],
 ];
 $categoryOrder = ['povinne', 'obleceni', 'vybaveni', 'doporucene'];
 
@@ -27,8 +27,13 @@ renderHeader('Co s sebou', 'checklist');
 </div>
 
 <div id="checklistContainer">
-    <div class="text-center text-muted">Načítám...</div>
+    <div class="text-center text-muted" style="padding:24px;">Načítám...</div>
 </div>
+
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddChecklist()" title="Přidat položku">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
 
 <!-- Modal -->
 <div class="modal-overlay" id="checklistModal">
@@ -69,6 +74,11 @@ const categoryNames = <?= json_encode(array_map(fn($c) => $c['name'], $categoryN
 const categoryIcons = <?= json_encode(array_map(fn($c) => $c['icon'], $categoryNames)) ?>;
 const categoryOrder = <?= json_encode($categoryOrder) ?>;
 
+function toggleSection(el) {
+    const section = el.closest('.cl-section');
+    section.classList.toggle('collapsed');
+}
+
 async function loadChecklist() {
     const res = await apiCall('/api/checklist.php?action=list');
     if (!res.success) { showToast(res.error || 'Chyba.', 'error'); return; }
@@ -77,11 +87,11 @@ async function loadChecklist() {
     const container = document.getElementById('checklistContainer');
 
     if (items.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#9989;</div><p>Checklist je prázdný. Přidejte první položku.</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--gray-300);margin-bottom:8px;"></i><p>Checklist je prázdný. Přidejte první položku.</p></div>';
+        lucide.createIcons();
         return;
     }
 
-    // Seskupit podle kategorií
     const grouped = {};
     items.forEach(item => {
         if (!grouped[item.category]) grouped[item.category] = [];
@@ -92,22 +102,37 @@ async function loadChecklist() {
     categoryOrder.forEach(catKey => {
         if (!grouped[catKey]) return;
         const catItems = grouped[catKey];
-        html += `<div class="checklist-category">
-            <div class="checklist-category-title">
-                <span>${categoryIcons[catKey]}</span>
-                ${escapeHtml(categoryNames[catKey])}
-                <span class="badge badge-gray">${catItems.length}</span>
-            </div>
-            <div class="card" style="padding: 8px 12px;">`;
+        const icon = categoryIcons[catKey] || 'list';
+        const name = categoryNames[catKey] || catKey;
+        const total = catItems.length;
+
+        html += `<div class="cl-section" id="cl-sec-${catKey}">
+            <button class="cl-section-header" onclick="toggleSection(this)">
+                <span class="cl-section-title">
+                    <i data-lucide="${escapeHtml(icon)}" style="width:16px;height:16px;"></i>
+                    ${escapeHtml(name)}
+                    <span class="badge badge-gray" style="margin-left:4px;">${total}</span>
+                </span>
+                <span class="cl-section-meta">
+                    <i data-lucide="chevron-down" class="cl-chevron" style="width:16px;height:16px;"></i>
+                </span>
+            </button>
+            <div class="cl-section-body">`;
 
         catItems.forEach(item => {
-            html += `<div class="checklist-item" style="cursor: pointer;" onclick='editChecklist(${JSON.stringify(item)})'>
-                <span style="color: var(--gray-300);">&#9744;</span>
-                <div style="flex: 1;">
-                    <div class="checklist-item-name">${escapeHtml(item.item_name)}</div>
-                    ${item.description ? '<div class="checklist-item-desc">' + escapeHtml(item.description) + '</div>' : ''}
+            html += `<div class="cl-item" id="cl-item-${item.id}">
+                <div class="cl-item-check">
+                    <i data-lucide="check" style="width:12px;height:12px;display:none;"></i>
                 </div>
-                <span class="text-muted text-sm">&#9998;</span>
+                <div class="cl-item-content" onclick='editChecklist(${JSON.stringify(item)})' style="cursor:pointer;">
+                    <div class="cl-item-name">${escapeHtml(item.item_name)}</div>
+                    ${item.description ? `<div class="cl-item-desc">${escapeHtml(item.description)}</div>` : ''}
+                </div>
+                <div class="cl-item-actions">
+                    <button class="icon-btn" onclick='editChecklist(${JSON.stringify(item)})' title="Upravit">
+                        <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+                    </button>
+                </div>
             </div>`;
         });
 
@@ -115,6 +140,7 @@ async function loadChecklist() {
     });
 
     container.innerHTML = html;
+    lucide.createIcons();
 }
 
 function openAddChecklist() {
