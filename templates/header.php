@@ -26,6 +26,10 @@
             <a href="/logout.php" class="top-bar-logout" title="Odhlásit se">
                 <i data-lucide="log-out" style="width:18px;height:18px;"></i>
             </a>
+            <!-- Hamburger – jen na mobilu -->
+            <button class="top-bar-hamburger" onclick="toggleMobileMenu()" id="menuToggle" aria-label="Menu">
+                <i data-lucide="menu" style="width:22px;height:22px;"></i>
+            </button>
         </div>
     </header>
 
@@ -66,7 +70,7 @@
         <?php endif; ?>
     </nav>
 
-    <!-- Spodní mobilní navigace – 5 položek, žádné "Více" tlačítko -->
+    <!-- Spodní mobilní navigace – 4 hlavní položky, hamburger je v top baru -->
     <nav class="bottom-nav">
         <a href="/pages/dashboard.php" class="bottom-nav-item <?= $activePage === 'dashboard' ? 'active' : '' ?>">
             <i data-lucide="home" class="bottom-nav-icon"></i>
@@ -84,13 +88,9 @@
             <i data-lucide="book-open" class="bottom-nav-icon"></i>
             <span class="bottom-nav-label">Deník</span>
         </a>
-        <button class="bottom-nav-item <?= in_array($activePage, ['itinerary','crews','menu','checklist','cars','admin']) ? 'active' : '' ?>" onclick="toggleMobileMenu()" id="menuToggle" aria-label="Více">
-            <i data-lucide="grid" class="bottom-nav-icon"></i>
-            <span class="bottom-nav-label">Více</span>
-        </button>
     </nav>
 
-    <!-- Mobilní drawer – slide-up bottom sheet -->
+    <!-- Mobilní drawer – slide-down z top baru -->
     <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Navigace">
         <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
         <div class="mobile-menu-content">
