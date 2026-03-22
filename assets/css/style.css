@@ -36,6 +36,7 @@
     --sidebar-width: 220px;
     --topbar-height: 56px;
     --bottomnav-height: 60px;
+    --bottomnav-total: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ============================================================
@@ -74,84 +75,80 @@ img { max-width: 100%; height: auto; }
     justify-content: space-between;
     padding: 0 16px;
     z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.08);
+    /* Žádný margin/padding nad ním – přilepeno k hornímu okraji */
 }
 
 .top-bar-logo {
     color: white;
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 1rem;
     text-decoration: none;
-    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 60vw;
+    max-width: 55vw;
 }
 
-.top-bar-logo-img {
-    height: 1.05rem;
-    width: auto;
+.top-bar-logo img {
+    width: 20px;
+    height: 20px;
     object-fit: contain;
     flex-shrink: 0;
-    vertical-align: middle;
 }
 
-.top-bar-right {
+.top-bar-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
+/* Desktop: jméno uživatele – na mobilu skryto */
 .top-bar-user {
-    font-size: 0.85rem;
-    opacity: 0.9;
     display: none;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-right: 8px;
 }
 
 .top-bar-boat {
     background: var(--accent);
     color: var(--primary);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-left: 5px;
+    vertical-align: middle;
 }
 
-.top-bar-logout {
-    color: white;
-    opacity: 0.7;
-    font-size: 1.2rem;
-    text-decoration: none;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: opacity 0.2s;
-}
-
-.top-bar-logout:hover { opacity: 1; text-decoration: none; }
-
-.top-bar-hamburger {
-    display: flex;
+/* Sdílený styl pro tlačítka v top baru */
+.top-bar-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     background: none;
     border: none;
     color: white;
-    opacity: 0.85;
+    opacity: 0.75;
     cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 6px;
-    transition: opacity 0.2s;
-    margin-left: 2px;
+    text-decoration: none;
+    transition: opacity 0.15s, background 0.15s;
+    font-family: inherit;
 }
 
-.top-bar-hamburger:hover { opacity: 1; }
-
-@media (min-width: 768px) {
-    .top-bar-hamburger { display: none; }
+.top-bar-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.12);
+    text-decoration: none;
+    color: white;
 }
 
 /* ============================================================
@@ -220,14 +217,14 @@ img { max-width: 100%; height: auto; }
     bottom: 0;
     left: 0;
     right: 0;
-    height: var(--bottomnav-height);
+    height: 60px;
     background: white;
     border-top: 1px solid var(--gray-200);
     display: flex;
-    align-items: center;
-    justify-content: space-around;
+    align-items: stretch;
+    justify-content: space-evenly;
     z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
 }
 
 .bottom-nav-item {
@@ -238,16 +235,17 @@ img { max-width: 100%; height: auto; }
     gap: 3px;
     color: var(--gray-400);
     text-decoration: none;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
-    padding: 6px 0;
     flex: 1;
     border: none;
     background: none;
     cursor: pointer;
     font-family: inherit;
     transition: color 0.15s;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
+    padding: 0;
+    margin: 0;
 }
 
 .bottom-nav-item:hover,
@@ -257,29 +255,29 @@ img { max-width: 100%; height: auto; }
 }
 
 .bottom-nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 23px;
+    height: 23px;
     stroke-width: 1.75;
-    transition: transform 0.15s;
 }
 
 .bottom-nav-item.active .bottom-nav-icon {
     stroke-width: 2.25;
 }
 
-.bottom-nav-label { line-height: 1; }
+.bottom-nav-label {
+    line-height: 1;
+    white-space: nowrap;
+}
 
 /* ============================================================
-   MOBILE MENU (hamburger)
+   MOBILE MENU – slide-up bottom sheet
    ============================================================ */
 
 .mobile-menu {
     position: fixed;
-    top: var(--topbar-height);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 200;
+    inset: 0;
+    /* Nad vším – včetně bottom nav */
+    z-index: 500;
     pointer-events: none;
 }
 
@@ -288,7 +286,7 @@ img { max-width: 100%; height: auto; }
 .mobile-menu-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     opacity: 0;
     transition: opacity 0.25s ease;
 }
@@ -297,89 +295,186 @@ img { max-width: 100%; height: auto; }
 
 .mobile-menu-content {
     position: absolute;
+    /* Od top baru dolů – celá výška minus top bar */
     top: var(--topbar-height);
     left: 0;
     right: 0;
+    bottom: 0;
     background: white;
-    border-radius: 0 0 16px 16px;
-    padding: 8px 0 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    transform: translateY(-110%);
-    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
-    max-height: calc(100vh - var(--topbar-height) - 20px);
     overflow-y: auto;
-}
-
-.mobile-menu.open .mobile-menu-content { transform: translateY(0); }
-
-/* Handle skrytý – drawer teď jde dolů z top baru */
-.mobile-menu-handle { display: none; }
-
-/* Grid tiles místo seznam odkazů */
-.mobile-menu-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 0 16px 12px;
-}
-
-.mobile-menu-tile {
+    overscroll-behavior: contain;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 14px 8px;
-    border-radius: 12px;
-    color: var(--gray-600);
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-decoration: none;
-    background: var(--gray-50);
-    transition: all 0.15s;
-    text-align: center;
 }
 
-.mobile-menu-tile:hover,
-.mobile-menu-tile.active {
-    background: #ebf4ff;
-    color: var(--primary);
-    text-decoration: none;
-}
+.mobile-menu.open .mobile-menu-content { transform: translateX(0); }
 
-.mobile-menu-tile-icon {
-    width: 24px;
-    height: 24px;
-    stroke-width: 1.75;
-}
+/* Drag handle */
+/* ============================================================
+   DRAWER – nový design (slide-up, full-width)
+   ============================================================ */
 
-.mobile-menu-footer {
+/* Hlavička draweru */
+.drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
-    border-top: 1px solid var(--gray-100);
-    font-size: 0.82rem;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--gray-100);
 }
 
-.mobile-menu-user {
+.drawer-header-user {
     display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.drawer-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.drawer-close:hover { background: var(--gray-200); }
+
+/* Nav seznam – flex-grow aby logout byl vždy dole */
+.drawer-nav {
+    padding: 8px 0;
+    flex: 1;
+}
+
+.drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 20px;
+    color: var(--gray-700);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.12s;
+    border-left: 3px solid transparent;
+}
+
+.drawer-link:hover {
+    background: var(--gray-50);
+    text-decoration: none;
+}
+
+.drawer-link.active {
+    background: #eff6ff;
+    color: var(--primary);
+    font-weight: 700;
+    border-left-color: var(--primary);
+}
+
+.drawer-link-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--gray-600);
+    transition: background 0.12s;
+}
+
+.drawer-link.active .drawer-link-icon {
+    background: #dbeafe;
+    color: var(--primary);
+}
+
+.drawer-link-label { flex: 1; }
+
+/* Footer s logout – diskrétní, malý */
+.drawer-footer {
+    padding: 12px 20px 20px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.drawer-logout {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--gray-600);
+    color: var(--gray-400);
+    font-size: 0.8rem;
     font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s;
 }
 
-.mobile-menu-logout {
+.drawer-logout:hover {
+    color: var(--danger);
+    text-decoration: none;
+}
+
+/* Hamburger v top baru – vždy viditelný (mobil i desktop) */
+.top-bar-btn-desktop {
+    display: none; /* logout na mobilu skryt – je v draweru */
+}
+
+@media (min-width: 768px) {
+    .top-bar-btn-desktop { display: inline-flex; }
+}
+
+/* ============================================================
+   DRAWER AVATAR
+   ============================================================ */
+
+.drawer-avatar-wrap {
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.drawer-avatar-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid var(--gray-200);
+}
+
+/* Pokud je span.avatar místo img */
+.drawer-avatar-wrap .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+}
+
+/* Kamera badge */
+.drawer-avatar-edit {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 4px;
-    color: var(--danger);
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 0.82rem;
+    justify-content: center;
+    color: white;
+    border: 2px solid white;
 }
 
-.mobile-menu-logout:hover { text-decoration: underline; }
+.drawer-avatar-wrap:hover .drawer-avatar-edit {
+    background: var(--primary-light);
+}
 
 /* ============================================================
    MAIN CONTENT
@@ -387,9 +482,8 @@ img { max-width: 100%; height: auto; }
 
 .main-content {
     margin-top: var(--topbar-height);
-    /* Padding-bottom místo margin-bottom – margin nekryje obsah za bottom navem */
-    padding: 20px 16px calc(var(--bottomnav-height) + 16px + env(safe-area-inset-bottom));
-    min-height: calc(100vh - var(--topbar-height));
+    padding: 16px 16px 96px; /* 60px nav + 36px margin */
+    min-height: 100vh;
 }
 
 /* ============================================================
@@ -711,8 +805,10 @@ select.form-control {
     border-radius: 20px 20px 0 0;
     width: 100%;
     max-width: 100%;
+    /* Flex column – footer vždy dole, body scrolluje */
+    display: flex;
+    flex-direction: column;
     max-height: 92vh;
-    overflow-y: auto;
     box-shadow: var(--shadow-lg);
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
@@ -769,16 +865,22 @@ select.form-control {
     color: var(--gray-700);
 }
 
-.modal-body { padding: 20px; }
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1; /* zabere zbytek výšky, scrolluje */
+    overscroll-behavior: contain;
+}
 
 .modal-footer {
-    padding: 16px 20px;
+    padding: 14px 20px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--gray-200);
     display: flex;
     gap: 10px;
     justify-content: flex-end;
-    /* Bezpečná zóna pro iPhone X+ */
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    flex-shrink: 0; /* footer se nescrolluje, vždy dole */
+    background: white;
 }
 
 /* Desktop – klasické centrované modaly */
@@ -1253,6 +1355,97 @@ select.form-control {
    DASHBOARD SPECIFIC
    ============================================================ */
 
+/* Hero karta – pozdrav + bilance + posádka */
+.dash-hero {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.dash-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dash-hero-greeting {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+}
+
+.dash-hero-boat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.dash-balance {
+    font-size: 1.15rem;
+    font-weight: 800;
+    white-space: nowrap;
+    padding: 4px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.dash-balance.positive {
+    background: var(--success-bg);
+    color: #22543d;
+}
+
+.dash-balance.negative {
+    background: var(--danger-bg);
+    color: #c53030;
+}
+
+.dash-crew {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Trip status banners */
+.trip-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.trip-banner.sailing {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.trip-banner.ended {
+    background: var(--gray-100);
+    color: var(--gray-500);
+}
+
+.dash-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-400);
+    margin-bottom: 10px;
+    margin-top: 4px;
+}
+
 .countdown {
     text-align: center;
     padding: 20px;
@@ -1291,10 +1484,11 @@ select.form-control {
     margin-top: 4px;
 }
 
+/* Mobile-first: 2 sloupce */
 .nav-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 .nav-card {
@@ -1303,19 +1497,20 @@ select.form-control {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 20px 16px;
+    padding: 18px 12px 16px;
     background: white;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-decoration: none;
     color: var(--gray-700);
     font-weight: 600;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     transition: all 0.15s;
+    min-height: 90px;
 }
 
 .nav-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
     text-decoration: none;
 }
@@ -1325,6 +1520,15 @@ select.form-control {
     height: 28px;
     stroke-width: 1.5;
     color: var(--primary-light);
+}
+
+/* Desktop: 4 sloupce */
+@media (min-width: 768px) {
+    .nav-cards {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+    .nav-card { padding: 22px 16px; }
 }
 
 /* ============================================================
@@ -1362,22 +1566,17 @@ select.form-control {
     .main-content {
         margin-left: var(--sidebar-width);
         padding: 24px 32px;
+        padding-bottom: 24px; /* reset – desktop nemá bottom nav */
         min-height: calc(100vh - var(--topbar-height));
     }
 
     .top-bar-user { display: inline; }
 
-    .top-bar-logo {
-        max-width: none;
-    }
+    .top-bar-logo { max-width: none; }
 
-    .form-row {
-        grid-template-columns: 1fr 1fr;
-    }
+    .form-row { grid-template-columns: 1fr 1fr; }
 
-    .card-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
+    .card-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 }
 
 @media (min-width: 1024px) {

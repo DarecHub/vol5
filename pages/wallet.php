@@ -247,25 +247,32 @@ async function loadExpenses() {
             const castka = (e.currency === 'CZK' ? `<span class="amount-pill-sub">(${formatMoney(e.amount_eur)})</span>` : '')
                 + `<span class="amount-pill ${pillClass}">${formatMoney(e.amount, e.currency)}</span>`;
             const catIcon = getCategoryIcon(e.category || 'other');
+            const photoThumb = e.photo
+                ? `<img src="${escapeHtml(e.photo)}" onclick="openPhotoModal('${escapeHtml(e.photo)}')"
+                       style="width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;border:1px solid var(--gray-200);">`
+                : `<button class="icon-btn" onclick="triggerPhotoUpload(${e.id})" title="Přidat fotku">
+                       <i data-lucide="camera" style="width:15px;height:15px;"></i>
+                   </button>`;
             return `<div class="expense-card">
                 <div class="expense-card-header">
                     <div class="expense-card-who">
-                        <div class="expense-card-avatar" style="background:none;width:auto;height:auto;flex-direction:row;gap:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
                             <span style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${escapeHtml(getInitials(e.paid_by_name))}</span>
                             <div>
                                 <div class="fw-semi">${escapeHtml(e.paid_by_name)}</div>
                                 <div class="text-sm text-muted">${datum}</div>
                             </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <span style="width:28px;height:28px;border-radius:8px;background:var(--gray-100);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}"><i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--gray-500);"></i></span>
-                        </div>
+                        <span style="width:28px;height:28px;border-radius:8px;background:var(--gray-100);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}">
+                            <i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--gray-500);"></i>
+                        </span>
                     </div>
                     <div class="expense-card-amount">${castka}</div>
                 </div>
                 <div class="expense-card-footer">
                     <span class="expense-card-desc">${escapeHtml(e.description)}</span>
-                    <div class="expense-card-actions">
+                    <div class="expense-card-actions" style="display:flex;align-items:center;gap:4px;">
+                        ${photoThumb}
                         <button class="icon-btn" onclick="editExpense(${e.id})" title="Upravit">
                             <i data-lucide="pencil" style="width:15px;height:15px;"></i>
                         </button>
@@ -533,6 +540,66 @@ function clearUsers() {
 
 function getSelectedUsers() {
     return Array.from(document.querySelectorAll('.split-user-cb:checked')).map(cb => parseInt(cb.value));
+}
+
+// ============================================================
+// FOTO K VÝDAJI
+// ============================================================
+
+let _photoUploadExpenseId = null;
+
+function triggerPhotoUpload(expenseId) {
+    _photoUploadExpenseId = expenseId;
+    let inp = document.getElementById('expensePhotoInput');
+    if (!inp) {
+        inp = document.createElement('input');
+        inp.type = 'file';
+        inp.id = 'expensePhotoInput';
+        inp.accept = 'image/jpeg,image/png,image/webp,image/heic';
+        inp.style.display = 'none';
+        inp.onchange = uploadExpensePhoto;
+        document.body.appendChild(inp);
+    }
+    inp.value = '';
+    inp.click();
+}
+
+async function uploadExpensePhoto() {
+    const inp = document.getElementById('expensePhotoInput');
+    if (!inp || !inp.files[0]) return;
+    const formData = new FormData();
+    formData.append('photo', inp.files[0]);
+    formData.append('expense_id', _photoUploadExpenseId);
+    formData.append('csrf_token', getCsrfToken());
+    try {
+        const res = await fetch('/api/expense_photo.php?action=upload', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData,
+        });
+        const json = await res.json();
+        if (json.success) {
+            showToast('Fotka přidána.', 'success');
+            loadExpenses();
+        } else {
+            showToast(json.error || 'Chyba nahrávání.', 'error');
+        }
+    } catch (e) {
+        showToast('Chyba připojení.', 'error');
+    }
+}
+
+function openPhotoModal(src) {
+    let overlay = document.getElementById('photoLightbox');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'photoLightbox';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+        overlay.onclick = () => overlay.remove();
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `<img src="${escapeHtml(src)}" style="max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px;">`;
+    document.body.appendChild(overlay);
 }
 
 // ============================================================

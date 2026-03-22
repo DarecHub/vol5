@@ -49,7 +49,7 @@ function crewInitials(string $name): string {
                     $isMine = $m['id'] == $userId;
                 ?>
                     <div class="crew-member">
-                        <span class="avatar avatar-md avatar-<?= $isMine ? 'accent' : $colorClass ?>"><?= crewInitials($m['name']) ?></span>
+                        <?= avatarHtml($m, 'md', $isMine ? 'accent' : $colorClass) ?>
                         <div style="flex:1;min-width:0;">
                             <div class="crew-member-name"><?= e($m['name']) ?><?= $isMine ? ' <span class="badge badge-accent" style="font-size:.7rem;">já</span>' : '' ?></div>
                         </div>

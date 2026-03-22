@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     name    VARCHAR(100) NOT NULL,
     phone   VARCHAR(50)  DEFAULT NULL,
     email   VARCHAR(150) DEFAULT NULL,
+    avatar  VARCHAR(200) DEFAULT NULL,
     boat_id INT          NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

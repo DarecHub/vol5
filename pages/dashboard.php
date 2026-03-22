@@ -51,86 +51,86 @@ function initials(string $name): string {
 }
 ?>
 
-<h1 class="page-title">
-    <i data-lucide="anchor" style="width:22px;height:22px;vertical-align:middle;margin-right:6px;color:var(--accent);"></i>Ahoj, <?= e(currentUserName()) ?>!
-</h1>
+<?php
+// Countdown stav
+$tripInPast = false;
+$tripInFuture = false;
+if ($tripDateFrom) {
+    $now = new DateTime();
+    $target = new DateTime($tripDateFrom);
+    if ($now >= $target) $tripInPast = true;
+    else $tripInFuture = true;
+}
+$tripDateTo = getSetting('trip_date_to', '');
+$tripEnded = false;
+if ($tripDateTo) {
+    $now2 = new DateTime();
+    $end = new DateTime($tripDateTo);
+    if ($now2 > $end) $tripEnded = true;
+}
+?>
 
-<!-- Odpočet -->
-<?php if ($tripDateFrom): ?>
-<div class="countdown" id="countdown">
-    <div class="countdown-title" id="countdown-label">Do plachty zbývá</div>
+<!-- Hero karta -->
+<div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:16px;margin-bottom:12px;">
+    <!-- Řádek 1: jméno + bilance -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;">
+        <div>
+            <div style="font-size:1rem;font-weight:700;color:var(--gray-800);">Ahoj, <?= e(currentUserName()) ?>!</div>
+            <?php if ($boat): ?>
+            <div style="display:flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--gray-500);margin-top:2px;">
+                <i data-lucide="sailboat" style="width:12px;height:12px;flex-shrink:0;"></i>
+                <?= e($boat['name']) ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <div style="background:<?= $balance >= 0 ? '#dcfce7' : '#fee2e2' ?>;color:<?= $balance >= 0 ? '#166534' : '#991b1b' ?>;font-size:1rem;font-weight:800;padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;">
+            <?= ($balance >= 0 ? '+' : '') . formatMoney($balance) ?>
+        </div>
+    </div>
+    <!-- Řádek 2: avatary posádky s fotkami -->
+    <?php if (!empty($boatMembers)): ?>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <?php foreach ($boatMembers as $m):
+            $isMine = $m['id'] == $userId;
+            $color = $isMine ? 'accent' : $boatColorClass;
+        ?>
+            <div style="display:flex;align-items:center;gap:5px;">
+                <?= avatarHtml($m, 'sm', $color) ?>
+                <span style="font-size:0.75rem;color:var(--gray-600);font-weight:<?= $isMine ? '700' : '500' ?>;"><?= e($m['name']) ?></span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Status plavby -->
+<?php if ($tripEnded): ?>
+    <div style="display:flex;align-items:center;gap:8px;background:var(--gray-100);color:var(--gray-500);padding:10px 14px;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:12px;">
+        <i data-lucide="flag" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba skončila
+    </div>
+<?php elseif ($tripInPast): ?>
+    <div style="display:flex;align-items:center;gap:8px;background:#dcfce7;color:#166534;padding:10px 14px;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:12px;">
+        <i data-lucide="anchor" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba probíhá!
+    </div>
+<?php elseif ($tripInFuture): ?>
+<div class="countdown" id="countdown" style="margin-bottom:12px;">
+    <div class="countdown-title">Do plachty zbývá</div>
     <div class="countdown-numbers">
-        <div class="countdown-item">
-            <div class="countdown-value cd-days">–</div>
-            <div class="countdown-label">dní</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-hours">–</div>
-            <div class="countdown-label">hodin</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-minutes">–</div>
-            <div class="countdown-label">minut</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-seconds">–</div>
-            <div class="countdown-label">sekund</div>
-        </div>
+        <div class="countdown-item"><div class="countdown-value cd-days">–</div><div class="countdown-label">dní</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-hours">–</div><div class="countdown-label">hodin</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-minutes">–</div><div class="countdown-label">minut</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-seconds">–</div><div class="countdown-label">sekund</div></div>
     </div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var target = new Date('<?= e($tripDateFrom) ?>');
-    var now = new Date();
-    if (now >= target) {
-        var label = document.getElementById('countdown-label');
-        if (label) label.textContent = 'Plavba probíhá';
-    }
     initCountdown('<?= e($tripDateFrom) ?>', 'countdown');
 });
 </script>
 <?php endif; ?>
 
-<!-- Bilance -->
-<div class="card" style="margin-bottom: 12px;">
-    <div class="stat-card-inner" style="padding: 0;">
-        <div class="stat-card-icon-wrap <?= $balance >= 0 ? 'success' : 'danger' ?>">
-            <i data-lucide="<?= $balance >= 0 ? 'trending-up' : 'trending-down' ?>" style="width:22px;height:22px;"></i>
-        </div>
-        <div class="stat-card-info">
-            <div class="stat-card-value <?= $balance >= 0 ? 'balance-positive' : 'balance-negative' ?>" style="font-size:1.6rem;">
-                <?= ($balance >= 0 ? '+' : '') . formatMoney($balance) ?>
-            </div>
-            <div class="stat-card-label">Tvoje bilance · zaplaceno <?= formatMoney($paidTotal) ?></div>
-            <div class="progress-bar-wrap">
-                <div class="progress-bar-fill <?= $balance >= 0 ? 'success' : 'danger' ?>" style="width:<?= $paidPct ?>%;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Moje loď -->
-<?php if ($boat): ?>
-<div class="card" style="margin-bottom: 16px;">
-    <div class="card-header" style="display:flex;align-items:center;gap:8px;border-bottom:none;margin-bottom:10px;padding-bottom:0;">
-        <i data-lucide="sailboat" style="width:18px;height:18px;color:var(--<?= $boatColorClass ?>);"></i>
-        Tvoje loď: <strong><?= e($boat['name']) ?></strong>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <?php foreach ($boatMembers as $m):
-            $isMine = $m['id'] == $userId;
-        ?>
-            <div style="display:flex;align-items:center;gap:6px;">
-                <span class="avatar avatar-sm avatar-<?= $isMine ? 'accent' : $boatColorClass ?>"><?= initials($m['name']) ?></span>
-                <span style="font-size:0.82rem;font-weight:<?= $isMine ? '700' : '500' ?>;color:var(--gray-700);"><?= e($m['name']) ?></span>
-            </div>
-        <?php endforeach; ?>
-    </div>
-</div>
-<?php endif; ?>
-
 <!-- Navigační karty -->
-<h2 class="section-title">Sekce</h2>
+<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--gray-400);margin-bottom:8px;">Sekce</div>
 <div class="nav-cards">
     <?php
     $navItems = [
