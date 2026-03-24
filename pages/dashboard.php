@@ -71,32 +71,31 @@ if ($tripDateTo) {
 ?>
 
 <!-- Hero karta -->
-<div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:16px;margin-bottom:12px;">
-    <!-- Řádek 1: jméno + bilance -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;">
+<div class="dash-hero">
+    <div class="dash-hero-top">
         <div>
-            <div style="font-size:1rem;font-weight:700;color:var(--gray-800);">Ahoj, <?= e(currentUserName()) ?>!</div>
+            <div class="dash-hero-greeting">Ahoj, <?= e(currentUserName()) ?>!</div>
             <?php if ($boat): ?>
-            <div style="display:flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--gray-500);margin-top:2px;">
+            <div class="dash-hero-boat">
                 <i data-lucide="sailboat" style="width:12px;height:12px;flex-shrink:0;"></i>
                 <?= e($boat['name']) ?>
             </div>
             <?php endif; ?>
         </div>
-        <div style="background:<?= $balance >= 0 ? '#dcfce7' : '#fee2e2' ?>;color:<?= $balance >= 0 ? '#166534' : '#991b1b' ?>;font-size:1rem;font-weight:800;padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;">
-            <?= ($balance >= 0 ? '+' : '') . formatMoney($balance) ?>
+        <div class="dash-hero-balance <?= $balance >= 0 ? 'positive' : 'negative' ?>">
+            <span class="dash-hero-balance-label"><?= $balance >= 0 ? 'Přeplatek' : 'Dlužíte' ?></span>
+            <span class="dash-hero-balance-value"><?= formatMoney(abs($balance)) ?></span>
         </div>
     </div>
-    <!-- Řádek 2: avatary posádky s fotkami -->
     <?php if (!empty($boatMembers)): ?>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+    <div class="dash-hero-crew">
         <?php foreach ($boatMembers as $m):
             $isMine = $m['id'] == $userId;
             $color = $isMine ? 'accent' : $boatColorClass;
         ?>
-            <div style="display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="openMemberModal(<?= (int)$m['id'] ?>)">
+            <div class="dash-hero-member" onclick="openMemberModal(<?= (int)$m['id'] ?>)">
                 <?= avatarHtml($m, 'sm', $color) ?>
-                <span style="font-size:0.75rem;color:var(--gray-600);font-weight:<?= $isMine ? '700' : '500' ?>;"><?= e($m['name']) ?></span>
+                <span class="dash-hero-member-name" style="font-weight:<?= $isMine ? '700' : '500' ?>;"><?= e($m['name']) ?></span>
             </div>
         <?php endforeach; ?>
     </div>
@@ -105,11 +104,11 @@ if ($tripDateTo) {
 
 <!-- Status plavby -->
 <?php if ($tripEnded): ?>
-    <div style="display:flex;align-items:center;gap:8px;background:var(--gray-100);color:var(--gray-500);padding:10px 14px;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:12px;">
+    <div class="dash-status ended">
         <i data-lucide="flag" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba skončila
     </div>
 <?php elseif ($tripInPast): ?>
-    <div style="display:flex;align-items:center;gap:8px;background:#dcfce7;color:#166534;padding:10px 14px;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:12px;">
+    <div class="dash-status active">
         <i data-lucide="anchor" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba probíhá!
     </div>
 <?php elseif ($tripInFuture): ?>
@@ -130,23 +129,23 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 <!-- Navigační karty -->
-<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--gray-400);margin-bottom:8px;">Sekce</div>
+<div class="dash-section-label">Sekce</div>
 <div class="nav-cards">
     <?php
     $navItems = [
-        ['href' => '/pages/wallet.php',    'icon' => 'wallet',       'label' => 'Pokladna',    'color' => '#38a169'],
-        ['href' => '/pages/shopping.php',  'icon' => 'shopping-cart','label' => 'Nákupy',      'color' => '#3182ce'],
-        ['href' => '/pages/logbook.php',   'icon' => 'book-open',    'label' => 'Deník',       'color' => '#6b46c1'],
-        ['href' => '/pages/itinerary.php', 'icon' => 'map',          'label' => 'Itinerář',    'color' => '#d69e2e'],
-        ['href' => '/pages/crews.php',     'icon' => 'users',        'label' => 'Posádky',     'color' => '#2b6cb0'],
-        ['href' => '/pages/menu.php',      'icon' => 'utensils',     'label' => 'Jídelníček',  'color' => '#e53e3e'],
-        ['href' => '/pages/checklist.php', 'icon' => 'check-square', 'label' => 'Co s sebou',  'color' => '#319795'],
-        ['href' => '/pages/cars.php',      'icon' => 'car',          'label' => 'Auta',        'color' => '#744210'],
+        ['href' => '/pages/wallet.php',    'icon' => 'wallet',       'label' => 'Pokladna',    'css' => 'nc-wallet'],
+        ['href' => '/pages/shopping.php',  'icon' => 'shopping-cart','label' => 'Nákupy',      'css' => 'nc-shopping'],
+        ['href' => '/pages/logbook.php',   'icon' => 'book-open',    'label' => 'Deník',       'css' => 'nc-logbook'],
+        ['href' => '/pages/itinerary.php', 'icon' => 'map',          'label' => 'Itinerář',    'css' => 'nc-itinerary'],
+        ['href' => '/pages/crews.php',     'icon' => 'users',        'label' => 'Posádky',     'css' => 'nc-crews'],
+        ['href' => '/pages/menu.php',      'icon' => 'utensils',     'label' => 'Jídelníček',  'css' => 'nc-menu'],
+        ['href' => '/pages/checklist.php', 'icon' => 'check-square', 'label' => 'Co s sebou',  'css' => 'nc-checklist'],
+        ['href' => '/pages/cars.php',      'icon' => 'car',          'label' => 'Auta',        'css' => 'nc-cars'],
     ];
     foreach ($navItems as $n): ?>
         <a href="<?= $n['href'] ?>" class="nav-card">
-            <span style="width:40px;height:40px;border-radius:12px;background:<?= $n['color'] ?>18;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">
-                <i data-lucide="<?= $n['icon'] ?>" style="width:22px;height:22px;color:<?= $n['color'] ?>;stroke-width:1.75;"></i>
+            <span class="nav-card-icon-wrap <?= $n['css'] ?>">
+                <i data-lucide="<?= $n['icon'] ?>" style="width:22px;height:22px;stroke-width:1.75;"></i>
             </span>
             <?= $n['label'] ?>
         </a>

@@ -136,7 +136,7 @@ function avatarHtml(array $user, string $size = 'md', string $colorClass = 'prim
 
     if (!empty($user['avatar'])) {
         $src = e('/' . $user['avatar']);
-        return '<img src="' . $src . '" alt="' . e($user['name']) . '" class="avatar avatar-' . $size . '" style="object-fit:cover;border:2px solid var(--gray-200);">';
+        return '<img src="' . $src . '" alt="' . e($user['name']) . '" class="avatar avatar-' . $size . '" style="object-fit:cover;border:2px solid var(--color-border);">';
     }
 
     return '<span class="avatar avatar-' . $size . ' avatar-' . $colorClass . '">' . e($initials) . '</span>';

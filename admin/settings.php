@@ -106,12 +106,20 @@ $checklist = $db->query("SELECT * FROM checklist ORDER BY sort_order, id")->fetc
 renderHeader('Nastavení', 'admin');
 ?>
 
-<h1 class="page-title">&#9881; Nastavení</h1>
+<h1 class="page-title">
+    <i data-lucide="sliders-horizontal" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--color-brand);"></i>Nastavení
+</h1>
 
 <div class="admin-nav">
-    <a href="/admin/index.php" class="btn btn-outline btn-sm">Dashboard</a>
-    <a href="/admin/users.php" class="btn btn-outline btn-sm">Uživatelé</a>
-    <a href="/admin/settings.php" class="btn btn-primary btn-sm active">Nastavení</a>
+    <a href="/admin/index.php" class="btn btn-outline btn-sm">
+        <i data-lucide="layout-dashboard" style="width:14px;height:14px;"></i> Dashboard
+    </a>
+    <a href="/admin/users.php" class="btn btn-outline btn-sm">
+        <i data-lucide="users" style="width:14px;height:14px;"></i> Uživatelé
+    </a>
+    <a href="/admin/settings.php" class="btn btn-primary btn-sm active">
+        <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i> Nastavení
+    </a>
 </div>
 
 <?php if ($error): ?>
@@ -123,7 +131,7 @@ renderHeader('Nastavení', 'admin');
 
 <!-- Nastavení plavby -->
 <div class="card">
-    <div class="card-header">Nastavení plavby</div>
+    <div class="card-header"><i data-lucide="anchor" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--color-brand);"></i>Nastavení plavby</div>
     <form method="POST">
         <?= csrfField() ?>
         <input type="hidden" name="section" value="general">
@@ -147,7 +155,7 @@ renderHeader('Nastavení', 'admin');
 
 <!-- Názvy lodí -->
 <div class="card">
-    <div class="card-header">Lodě</div>
+    <div class="card-header"><i data-lucide="sailboat" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--color-boat1);"></i>Lodě</div>
     <form method="POST">
         <?= csrfField() ?>
         <input type="hidden" name="section" value="boats">
@@ -169,7 +177,7 @@ renderHeader('Nastavení', 'admin');
 
 <!-- Hesla -->
 <div class="card">
-    <div class="card-header">Změna hesel</div>
+    <div class="card-header"><i data-lucide="key-round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--color-brand);"></i>Změna hesel</div>
     <div class="form-row">
         <div>
             <form method="POST">
@@ -208,9 +216,9 @@ renderHeader('Nastavení', 'admin');
 
 <!-- Itinerář -->
 <div class="card" id="itinerary">
-    <div class="card-header">Itinerář</div>
+    <div class="card-header"><i data-lucide="map" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--color-brand);"></i>Itinerář</div>
 
-    <form method="POST" class="mb-2" style="background: var(--gray-50); padding: 16px; border-radius: 8px;">
+    <form method="POST" class="mb-2" style="background: var(--color-bg-subtle); padding: 16px; border-radius: 8px;">
         <?= csrfField() ?>
         <input type="hidden" name="section" value="itinerary_add">
         <p class="fw-semi mb-1">Přidat den:</p>
@@ -303,9 +311,9 @@ renderHeader('Nastavení', 'admin');
 
 <!-- Checklist -->
 <div class="card" id="checklist">
-    <div class="card-header">Checklist – Co s sebou</div>
+    <div class="card-header"><i data-lucide="check-square" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;color:var(--color-success);"></i>Checklist – Co s sebou</div>
 
-    <form method="POST" class="mb-2" style="background: var(--gray-50); padding: 16px; border-radius: 8px;">
+    <form method="POST" class="mb-2" style="background: var(--color-bg-subtle); padding: 16px; border-radius: 8px;">
         <?= csrfField() ?>
         <input type="hidden" name="section" value="checklist_add">
         <p class="fw-semi mb-1">Přidat položku:</p>
@@ -374,60 +382,64 @@ renderHeader('Nastavení', 'admin');
 </div>
 
 <!-- Modal: Upravit den itineráře -->
-<div class="modal-overlay" id="itineraryEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-    <div class="modal" style="background:#fff; border-radius:12px; padding:24px; max-width:560px; width:100%; margin:20px; max-height:90vh; overflow-y:auto;">
-        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; color:var(--primary);">Upravit den itineráře</h3>
-            <button onclick="closeItineraryEdit()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#718096;">&times;</button>
+<div class="modal-overlay" id="itineraryEditModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i data-lucide="pencil" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>Upravit den itineráře
+            </h3>
+            <button class="modal-close" onclick="closeItineraryEdit()">&times;</button>
         </div>
         <form method="POST" id="itineraryEditForm">
             <?= csrfField() ?>
             <input type="hidden" name="section" value="itinerary_edit">
             <input type="hidden" name="item_id" id="edit_item_id">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Den č.</label>
-                    <input type="number" name="day_number" id="edit_day_number" class="form-control" min="0" required>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Den č.</label>
+                        <input type="number" name="day_number" id="edit_day_number" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Datum</label>
+                        <input type="date" name="date" id="edit_date" class="form-control">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Datum</label>
-                    <input type="date" name="date" id="edit_date" class="form-control">
+                    <label class="form-label">Název / nadpis</label>
+                    <input type="text" name="title" id="edit_title" class="form-control" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Odkud</label>
+                        <input type="text" name="location_from" id="edit_location_from" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kam</label>
+                        <input type="text" name="location_to" id="edit_location_to" class="form-control">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Typ</label>
+                        <select name="type" id="edit_type" class="form-control">
+                            <option value="car">Auto</option>
+                            <option value="sailing">Plavba</option>
+                            <option value="port">Přístav</option>
+                            <option value="other">Jiný</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pořadí řazení</label>
+                        <input type="number" name="sort_order" id="edit_sort_order" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Popis</label>
+                    <textarea name="description" id="edit_description" class="form-control" rows="2"></textarea>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Název / nadpis</label>
-                <input type="text" name="title" id="edit_title" class="form-control" required>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Odkud</label>
-                    <input type="text" name="location_from" id="edit_location_from" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Kam</label>
-                    <input type="text" name="location_to" id="edit_location_to" class="form-control">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Typ</label>
-                    <select name="type" id="edit_type" class="form-control">
-                        <option value="car">Auto</option>
-                        <option value="sailing">Plavba</option>
-                        <option value="port">Přístav</option>
-                        <option value="other">Jiný</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Pořadí řazení</label>
-                    <input type="number" name="sort_order" id="edit_sort_order" class="form-control">
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Popis</label>
-                <textarea name="description" id="edit_description" class="form-control" rows="2"></textarea>
-            </div>
-            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeItineraryEdit()">Zrušit</button>
                 <button type="submit" class="btn btn-primary">Uložit změny</button>
             </div>
@@ -446,14 +458,11 @@ function openItineraryEdit(it) {
     document.getElementById('edit_type').value          = it.type;
     document.getElementById('edit_sort_order').value    = it.sort_order;
     document.getElementById('edit_description').value   = it.description || '';
-    document.getElementById('itineraryEditModal').style.display = 'flex';
+    openModal('itineraryEditModal');
 }
 function closeItineraryEdit() {
-    document.getElementById('itineraryEditModal').style.display = 'none';
+    closeModal('itineraryEditModal');
 }
-document.getElementById('itineraryEditModal').addEventListener('click', function(e) {
-    if (e.target === this) closeItineraryEdit();
-});
 </script>
 
 <?php renderFooter(); ?>

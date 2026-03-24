@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= e($title) ?> – <?= e($tripName) ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    (function(){
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+    })();
+    </script>
     <link rel="stylesheet" href="/assets/css/style.css">
     <script src="/assets/js/lucide.min.js"></script>
     <script src="/assets/js/app.js"></script>
@@ -17,19 +27,44 @@
             <span><?= e($tripName) ?></span>
         </a>
         <div class="top-bar-actions">
-            <!-- Desktop: jméno + loď -->
-            <span class="top-bar-user">
-                <?= e($userName) ?>
-                <?php if ($boatName): ?>
-                    <span class="top-bar-boat"><?= e($boatName) ?></span>
-                <?php endif; ?>
-            </span>
-            <!-- Desktop logout -->
-            <a href="/logout.php" class="top-bar-btn top-bar-btn-desktop" title="Odhlásit se">
-                <i data-lucide="log-out" style="width:20px;height:20px;"></i>
-            </a>
-            <!-- Hamburger – mobil i desktop -->
-            <button class="top-bar-btn" onclick="toggleMobileMenu()" id="menuToggle" aria-label="Menu">
+            <!-- Desktop: avatar s popup dropdownem -->
+            <?php $topBarUser = ['name' => $userName, 'avatar' => $userAvatar ? ltrim($userAvatar, '/') : null]; ?>
+            <div class="user-dropdown-wrap">
+                <button class="top-bar-avatar-btn" onclick="toggleUserDropdown()" id="userDropdownToggle">
+                    <?= avatarHtml($topBarUser, 'sm', 'primary') ?>
+                    <span class="top-bar-user-name"><?= e($userName) ?></span>
+                    <i data-lucide="chevron-down" style="width:14px;height:14px;opacity:0.6;"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-dropdown-header">
+                        <div class="user-dropdown-avatar" onclick="document.getElementById('avatarFileDropdown').click()" title="Změnit profilový obrázek">
+                            <?= avatarHtml($topBarUser, 'lg', 'primary') ?>
+                            <span class="user-dropdown-avatar-edit">
+                                <i data-lucide="camera" style="width:12px;height:12px;"></i>
+                            </span>
+                        </div>
+                        <input type="file" id="avatarFileDropdown" accept="image/jpeg,image/png,image/webp,image/gif"
+                               style="display:none;" onchange="uploadAvatar(this)">
+                        <div class="user-dropdown-name"><?= e($userName) ?></div>
+                        <?php if ($boatName): ?>
+                        <div class="user-dropdown-boat">
+                            <i data-lucide="sailboat" style="width:12px;height:12px;"></i> <?= e($boatName) ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="user-dropdown-links">
+                        <button class="user-dropdown-link" onclick="toggleTheme(); return false;">
+                            <i data-lucide="moon" id="themeToggleIcon" style="width:16px;height:16px;"></i>
+                            <span id="themeToggleLabel">Tmavý režim</span>
+                        </button>
+                        <a href="/logout.php" class="user-dropdown-link">
+                            <i data-lucide="log-out" style="width:16px;height:16px;"></i> Odhlásit se
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- Hamburger – jen mobil -->
+            <button class="top-bar-btn top-bar-hamburger" onclick="toggleMobileMenu()" id="menuToggle" aria-label="Menu">
                 <i data-lucide="menu" style="width:22px;height:22px;"></i>
             </button>
         </div>
@@ -90,12 +125,16 @@
             <i data-lucide="book-open" class="bottom-nav-icon"></i>
             <span class="bottom-nav-label">Deník</span>
         </a>
+        <a href="#" class="bottom-nav-item" onclick="toggleMobileMenu(); return false;">
+            <i data-lucide="grid-2x2" class="bottom-nav-icon"></i>
+            <span class="bottom-nav-label">Více</span>
+        </a>
     </nav>
 
     <!-- Drawer menu -->
     <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Navigace">
         <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
-        <div class="mobile-menu-content" style="box-shadow:-4px 0 24px rgba(0,0,0,0.15);">
+        <div class="mobile-menu-content">
             <!-- Hlavička draweru: avatar + jméno + upload -->
             <div class="drawer-header">
                 <div class="drawer-header-user">
@@ -112,9 +151,9 @@
                     <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp,image/gif"
                            style="display:none;" onchange="uploadAvatar(this)">
                     <div>
-                        <div style="font-weight:700;font-size:0.95rem;color:var(--gray-800);"><?= e($userName) ?></div>
+                        <div style="font-weight:700;font-size:0.95rem;color:var(--color-text);"><?= e($userName) ?></div>
                         <?php if ($boatName): ?>
-                        <div style="font-size:0.75rem;color:var(--gray-500);display:flex;align-items:center;gap:4px;margin-top:2px;">
+                        <div style="font-size:0.75rem;color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;margin-top:2px;">
                             <i data-lucide="sailboat" style="width:11px;height:11px;"></i><?= e($boatName) ?>
                         </div>
                         <?php endif; ?>
@@ -151,14 +190,19 @@
                     </span>
                     <span class="drawer-link-label"><?= $p['label'] ?></span>
                     <?php if ($isActive): ?>
-                        <i data-lucide="chevron-right" style="width:15px;height:15px;color:var(--gray-300);margin-left:auto;"></i>
+                        <i data-lucide="chevron-right" style="width:15px;height:15px;color:var(--color-text-tertiary);margin-left:auto;"></i>
                     <?php endif; ?>
                 </a>
                 <?php endforeach; ?>
             </nav>
 
-            <!-- Logout dole -->
+            <!-- Theme toggle + Logout -->
             <div class="drawer-footer">
+                <button class="drawer-logout" onclick="toggleTheme(); return false;" style="margin-bottom:12px;border:none;background:none;cursor:pointer;font-family:inherit;">
+                    <i data-lucide="moon" id="themeToggleIconDrawer" style="width:17px;height:17px;"></i>
+                    <span id="themeToggleLabelDrawer">Tmavý režim</span>
+                </button>
+                <br>
                 <a href="/logout.php" class="drawer-logout">
                     <i data-lucide="log-out" style="width:17px;height:17px;"></i>
                     Odhlásit se

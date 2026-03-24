@@ -19,9 +19,9 @@ renderHeader('Co s sebou', 'checklist');
 
 <div class="d-flex-between mb-2">
     <h1 class="page-title" style="margin-bottom: 0;">
-        <i data-lucide="check-square" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Co s sebou
+        <i data-lucide="check-square" class="page-title-icon"></i>Co s sebou
     </h1>
-    <button class="btn btn-success" onclick="openAddChecklist()">
+    <button class="btn btn-success desktop-only-btn" onclick="openAddChecklist()">
         <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat
     </button>
 </div>
@@ -87,7 +87,7 @@ async function loadChecklist() {
     const container = document.getElementById('checklistContainer');
 
     if (items.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--gray-300);margin-bottom:8px;"></i><p>Checklist je prázdný. Přidejte první položku.</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Checklist je prázdný. Přidejte první položku.</p></div>';
         lucide.createIcons();
         return;
     }
@@ -184,18 +184,19 @@ async function saveChecklist() {
     }
 }
 
-async function deleteChecklist() {
+function deleteChecklist() {
     const id = document.getElementById('cl-id').value;
-    if (!id || !confirm('Opravdu smazat tuto položku?')) return;
-
-    const res = await apiCall('/api/checklist.php?action=delete', 'POST', { id: id });
-    if (res.success) {
-        closeModal('checklistModal');
-        showToast('Položka smazána.', 'success');
-        loadChecklist();
-    } else {
-        showToast(res.error || 'Chyba.', 'error');
-    }
+    if (!id) return;
+    confirmAction('Opravdu smazat tuto položku?', async function() {
+        const res = await apiCall('/api/checklist.php?action=delete', 'POST', { id: id });
+        if (res.success) {
+            closeModal('checklistModal');
+            showToast('Položka smazána.', 'success');
+            loadChecklist();
+        } else {
+            showToast(res.error || 'Chyba.', 'error');
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', loadChecklist);

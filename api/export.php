@@ -89,16 +89,16 @@ header('Content-Type: text/html; charset=utf-8');
     <meta charset="UTF-8">
     <title>Pokladna – <?= e($tripName) ?></title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 11px; color: #333; margin: 20px; }
-        h1 { font-size: 18px; color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 5px; }
-        h2 { font-size: 14px; color: #2b6cb0; margin-top: 20px; }
+        body { font-family: 'Open Sans', Arial, sans-serif; font-size: 11px; color: #111827; margin: 20px; }
+        h1 { font-size: 18px; color: #111827; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
+        h2 { font-size: 14px; color: #4338ca; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        th, td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
-        th { background: #f0f4f8; font-weight: bold; }
+        th, td { border: 1px solid #e5e7eb; padding: 5px 8px; text-align: left; }
+        th { background: #f9fafb; font-weight: bold; }
         .text-right { text-align: right; }
-        .positive { color: green; }
-        .negative { color: red; }
-        .footer { margin-top: 30px; font-size: 10px; color: #999; border-top: 1px solid #ccc; padding-top: 5px; }
+        .positive { color: #16a34a; }
+        .negative { color: #dc2626; }
+        .footer { margin-top: 30px; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 5px; }
         @media print { body { margin: 10mm; } }
     </style>
 </head>

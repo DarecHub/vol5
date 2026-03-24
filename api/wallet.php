@@ -92,11 +92,13 @@ switch ($action) {
         }
         $splitUsers = array_map('intval', array_filter($splitUsers));
 
-        // Validace datumu – přijmeme formát "Y-m-d H:i:s" nebo "Y-m-d H:i"
+        // Validace datumu – přijmeme "Y-m-d H:i:s", "Y-m-d H:i", "Y-m-d\TH:i:s", "Y-m-d\TH:i"
         $expenseDate = date('Y-m-d H:i:s');
         if ($expenseDateRaw !== '') {
             $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $expenseDateRaw)
-                       ?? DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw);
+                       ?: DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i', $expenseDateRaw);
             if ($parsedDate === false) {
                 jsonResponse(false, null, 'Neplatný formát datumu.');
             }
@@ -213,7 +215,9 @@ switch ($action) {
         $expenseDate = $oldData['expense_date'];
         if ($expenseDateRaw !== '') {
             $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $expenseDateRaw)
-                       ?? DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw);
+                       ?: DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i', $expenseDateRaw);
             if ($parsedDate === false) {
                 jsonResponse(false, null, 'Neplatný formát datumu.');
             }

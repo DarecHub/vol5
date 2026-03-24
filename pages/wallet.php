@@ -21,16 +21,16 @@ renderHeader('Pokladna', 'wallet');
 
 <div class="d-flex-between mb-2">
     <h1 class="page-title" style="margin-bottom: 0;">
-        <i data-lucide="wallet" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--accent);"></i>Pokladna
+        <i data-lucide="wallet" class="page-title-icon"></i>Pokladna
     </h1>
-    <button class="btn btn-success" onclick="openAddExpenseModal()">
+    <button class="btn btn-success desktop-only-btn" onclick="openAddExpenseModal()">
         <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat výdaj
     </button>
 </div>
 
 <!-- Statistiky nahoře -->
 <div class="wallet-stats-row">
-    <div class="stat-card accent">
+    <div class="stat-card brand">
         <div class="stat-card-value" id="totalExpenses">–</div>
         <div class="stat-card-label">Celkové výdaje</div>
     </div>
@@ -38,7 +38,7 @@ renderHeader('Pokladna', 'wallet');
         <div class="stat-card-value" id="myBalance">–</div>
         <div class="stat-card-label">Moje bilance</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card info">
         <div class="stat-card-value text-sm" id="exchangeRate" style="font-size:1rem;">–</div>
         <div class="stat-card-label">Kurz EUR/CZK</div>
     </div>
@@ -87,7 +87,7 @@ renderHeader('Pokladna', 'wallet');
 <div class="tab-panel" id="tab-settlements" data-tab-panel="wallet">
     <div class="card">
         <div class="card-header" style="display:flex;align-items:center;gap:8px;">
-            <i data-lucide="arrow-right-left" style="width:16px;height:16px;color:var(--accent);"></i>
+            <i data-lucide="arrow-right-left" style="width:16px;height:16px;color:var(--color-brand);"></i>
             Optimalizované vyrovnání
         </div>
         <div id="settlementsList">
@@ -96,9 +96,14 @@ renderHeader('Pokladna', 'wallet');
     </div>
 </div>
 
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddExpenseModal()" title="Přidat výdaj">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
+
 <!-- Modal: Přidat/Editovat výdaj -->
 <div class="modal-overlay" id="expenseModal">
-    <div class="modal" style="max-width: 600px;">
+    <div class="modal modal-lg">
         <div class="modal-header">
             <h3 class="modal-title" id="expenseModalTitle">Přidat výdaj</h3>
             <button class="modal-close" onclick="closeModal('expenseModal')">&times;</button>
@@ -122,7 +127,7 @@ renderHeader('Pokladna', 'wallet');
                 </div>
                 <div class="form-group">
                     <label class="form-label">Měna</label>
-                    <div style="display: flex; gap: 16px; padding-top: 8px;">
+                    <div class="currency-options">
                         <label class="form-check"><input type="radio" name="exp-currency" value="EUR" checked> EUR</label>
                         <label class="form-check"><input type="radio" name="exp-currency" value="CZK"> CZK</label>
                     </div>
@@ -140,28 +145,34 @@ renderHeader('Pokladna', 'wallet');
                 </div>
             </div>
 
-            <!-- ZA KOHO – celý seznam bez scrollu -->
+            <!-- ZA KOHO – kolapsovatelná sekce -->
             <div class="form-group">
                 <label class="form-label">Za koho (kdo se podílí) *</label>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                    <?php foreach ($boats as $b): ?>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="selectBoatUsers(<?= $b['id'] ?>)"><?= e($b['name']) ?></button>
-                    <?php endforeach; ?>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="selectAllUsers()">Všichni</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="clearUsers()">Nikdo</button>
+                <div class="split-users-toggle" onclick="toggleSplitUsers()">
+                    <span>Vybrat účastníky <span class="split-users-toggle-count" id="splitUsersCount">0 vybráno</span></span>
+                    <i data-lucide="chevron-down" class="split-users-toggle-chevron" id="splitUsersChevron" style="width:18px;height:18px;"></i>
                 </div>
-                <div id="splitUsersCheckboxes" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px;">
-                    <?php foreach ($boats as $b):
-                        $boatUsers = getUsersByBoat($b['id']);
-                    ?>
-                        <div class="text-sm fw-semi text-muted mb-1" style="margin-top: 6px;"><?= e($b['name']) ?>:</div>
-                        <?php foreach ($boatUsers as $u): ?>
-                            <label class="form-check" style="padding: 3px 0;">
-                                <input type="checkbox" class="split-user-cb" value="<?= $u['id'] ?>" data-boat="<?= $b['id'] ?>">
-                                <?= e($u['name']) ?>
-                            </label>
+                <div class="split-users-panel" id="splitUsersPanel">
+                    <div class="split-boat-buttons">
+                        <?php foreach ($boats as $b): ?>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="selectBoatUsers(<?= $b['id'] ?>)"><?= e($b['name']) ?></button>
                         <?php endforeach; ?>
-                    <?php endforeach; ?>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="selectAllUsers()">Všichni</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="clearUsers()">Nikdo</button>
+                    </div>
+                    <div id="splitUsersCheckboxes" class="split-checkboxes">
+                        <?php foreach ($boats as $b):
+                            $boatUsers = getUsersByBoat($b['id']);
+                        ?>
+                            <div class="text-sm fw-semi text-muted mb-1 split-boat-label"><?= e($b['name']) ?>:</div>
+                            <?php foreach ($boatUsers as $u): ?>
+                                <label class="form-check">
+                                    <input type="checkbox" class="split-user-cb" value="<?= $u['id'] ?>" data-boat="<?= $b['id'] ?>" onchange="updateSplitUsersCount()">
+                                    <?= e($u['name']) ?>
+                                </label>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -233,7 +244,7 @@ async function loadExpenses() {
     const expenses = res.data.expenses;
     const expensesBody = document.getElementById('expensesBody');
     if (expenses.length === 0) {
-        expensesBody.innerHTML = '<div class="empty-state"><div class="empty-state-icon" style="font-size:2.5rem;">💸</div><p>Žádné výdaje.</p></div>';
+        expensesBody.innerHTML = '<div class="empty-state"><i data-lucide="wallet" style="width:40px;height:40px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Žádné výdaje.</p></div>'; lucide.createIcons();
     } else {
         expensesBody.innerHTML = expenses.map(e => {
             const p = e.expense_date.split(/[- :]/);
@@ -243,16 +254,13 @@ async function loadExpenses() {
                 + `<span class="amount-pill ${pillClass}">${formatMoney(e.amount, e.currency)}</span>`;
             const catIcon = getCategoryIcon(e.category || 'other');
             const photoThumb = e.photo
-                ? `<img src="${escapeHtml(e.photo)}" onclick="openPhotoModal('${escapeHtml(e.photo)}')"
-                       style="width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;border:1px solid var(--gray-200);">`
+                ? `<img src="${escapeHtml(e.photo)}" onclick="openPhotoModal('${escapeHtml(e.photo)}')" class="expense-card-photo">`
                 : `<button class="icon-btn" onclick="triggerPhotoUpload(${e.id})" title="Přidat fotku">
                        <i data-lucide="camera" style="width:15px;height:15px;"></i>
                    </button>`;
             const avatarHtml = e.paid_by_avatar
-                ? `<img src="/${escapeHtml(e.paid_by_avatar)}" onclick="openMemberModal(${e.paid_by})"
-                       style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--gray-200);cursor:pointer;">`
-                : `<span onclick="openMemberModal(${e.paid_by})"
-                         style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">${escapeHtml(getInitials(e.paid_by_name))}</span>`;
+                ? `<img src="/${escapeHtml(e.paid_by_avatar)}" onclick="openMemberModal(${e.paid_by})" class="expense-card-avatar-img">`
+                : `<span onclick="openMemberModal(${e.paid_by})" class="expense-card-avatar" style="cursor:pointer;">${escapeHtml(getInitials(e.paid_by_name))}</span>`;
             return `<div class="expense-card">
                 <div class="expense-card-header">
                     <div class="expense-card-who">
@@ -263,8 +271,8 @@ async function loadExpenses() {
                                 <div class="text-sm text-muted">${datum}</div>
                             </div>
                         </div>
-                        <span style="width:28px;height:28px;border-radius:8px;background:var(--gray-100);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}">
-                            <i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--gray-500);"></i>
+                        <span style="width:28px;height:28px;border-radius:8px;background:var(--color-bg-muted);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}">
+                            <i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--color-text-secondary);"></i>
                         </span>
                     </div>
                     <div class="expense-card-amount">${castka}</div>
@@ -300,7 +308,7 @@ async function loadMyBalance() {
             const bal = me.balance;
             document.getElementById('myBalance').textContent = (bal >= 0 ? '+' : '') + formatMoney(bal);
             document.getElementById('myBalance').className = 'stat-card-value ' + (bal >= 0 ? 'balance-positive' : 'balance-negative');
-            document.getElementById('myBalanceCard').style.borderTop = '4px solid ' + (bal >= 0 ? 'var(--success)' : 'var(--danger)');
+            document.getElementById('myBalanceCard').className = 'stat-card ' + (bal >= 0 ? 'positive' : 'negative');
         }
     }
 }
@@ -353,7 +361,7 @@ async function loadSettlements() {
     const rate = res.data.rate;
 
     if (settlements.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--success);margin-bottom:8px;"></i><p>Všechny účty jsou vyrovnané!</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--color-success);margin-bottom:8px;"></i><p>Všechny účty jsou vyrovnané!</p></div>';
         lucide.createIcons();
     } else {
         container.innerHTML = settlements.map(s => {
@@ -362,15 +370,15 @@ async function loadSettlements() {
             const settledBtnClass = s.settled ? 'btn-outline' : 'btn-success';
             return `<div class="settlement-item-v2" style="${settledStyle}">
                 <span class="avatar avatar-sm avatar-primary">${escapeHtml(getInitials(s.from_name))}</span>
-                <i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
-                <span class="avatar avatar-sm avatar-boat2">${escapeHtml(getInitials(s.to_name))}</span>
+                <i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--color-brand);flex-shrink:0;"></i>
+                <span class="avatar avatar-sm avatar-primary">${escapeHtml(getInitials(s.to_name))}</span>
                 <div class="settlement-names">
                     <div class="settlement-from">${escapeHtml(s.from_name)}</div>
                     <div class="settlement-to">→ ${escapeHtml(s.to_name)}</div>
                 </div>
                 <div class="settlement-amount">
                     <div>${formatMoney(s.amount)}</div>
-                    <div style="font-size:0.75rem;color:var(--gray-500);font-weight:500;">${formatMoney(s.amount_czk, 'CZK')}</div>
+                    <div style="font-size:0.75rem;color:var(--color-text-secondary);font-weight:500;">${formatMoney(s.amount_czk, 'CZK')}</div>
                 </div>
                 <button class="btn ${settledBtnClass} btn-sm" onclick="toggleSettle(${s.from_id}, ${s.to_id}, ${s.settled ? 0 : 1})">${settledBtnText}</button>
             </div>`;
@@ -408,6 +416,12 @@ function openAddExpenseModal() {
     const _pad = n => String(n).padStart(2, '0');
     document.getElementById('exp-date').value = _now.getFullYear() + '-' + _pad(_now.getMonth()+1) + '-' + _pad(_now.getDate()) + 'T' + _pad(_now.getHours()) + ':' + _pad(_now.getMinutes());
     clearUsers(); // Všichni ODKLIKNUTI – uživatel si sám zaškrtne
+    // Collapse the split users panel for new expense
+    const _panel = document.getElementById('splitUsersPanel');
+    const _chevron = document.getElementById('splitUsersChevron');
+    if (_panel) _panel.classList.remove('open');
+    if (_chevron) _chevron.classList.remove('open');
+    updateSplitUsersCount();
     openModal('expenseModal');
 }
 
@@ -435,6 +449,12 @@ async function editExpense(id) {
             if (cb) cb.checked = true;
         });
     }
+    // Auto-open split panel when editing (users are already checked)
+    const _panel = document.getElementById('splitUsersPanel');
+    const _chevron = document.getElementById('splitUsersChevron');
+    if (_panel) _panel.classList.add('open');
+    if (_chevron) _chevron.classList.add('open');
+    updateSplitUsersCount();
 
     openModal('expenseModal');
 }
@@ -485,15 +505,16 @@ async function saveExpense() {
     }
 }
 
-async function deleteExpense(id) {
-    if (!confirm('Opravdu smazat tento výdaj?')) return;
-    const res = await apiCall('/api/wallet.php?action=delete', 'POST', { id: id });
-    if (res.success) {
-        showToast('Výdaj smazán.', 'success');
-        loadExpenses();
-    } else {
-        showToast(res.error || 'Chyba.', 'error');
-    }
+function deleteExpense(id) {
+    confirmAction('Opravdu smazat tento výdaj?', async function() {
+        const res = await apiCall('/api/wallet.php?action=delete', 'POST', { id: id });
+        if (res.success) {
+            showToast('Výdaj smazán.', 'success');
+            loadExpenses();
+        } else {
+            showToast(res.error || 'Chyba.', 'error');
+        }
+    });
 }
 
 async function showAudit(expenseId) {
@@ -507,7 +528,7 @@ async function showAudit(expenseId) {
         container.innerHTML = '<p class="text-muted">Žádná historie.</p>';
     } else {
         container.innerHTML = res.data.map(log => `
-            <div style="border-bottom: 1px solid var(--gray-100); padding: 10px 0;">
+            <div style="border-bottom: 1px solid var(--color-border); padding: 10px 0;">
                 <div class="d-flex-between">
                     <span class="badge ${log.change_type === 'deleted' ? 'badge-danger' : log.change_type === 'edited' ? 'badge-accent' : 'badge-success'}">
                         ${changeTypeNames[log.change_type] || log.change_type}
@@ -528,18 +549,34 @@ function selectBoatUsers(boatId) {
     document.querySelectorAll('.split-user-cb').forEach(cb => {
         if (parseInt(cb.dataset.boat) === boatId) cb.checked = true;
     });
+    updateSplitUsersCount();
 }
 
 function selectAllUsers() {
     document.querySelectorAll('.split-user-cb').forEach(cb => cb.checked = true);
+    updateSplitUsersCount();
 }
 
 function clearUsers() {
     document.querySelectorAll('.split-user-cb').forEach(cb => cb.checked = false);
+    updateSplitUsersCount();
 }
 
 function getSelectedUsers() {
     return Array.from(document.querySelectorAll('.split-user-cb:checked')).map(cb => parseInt(cb.value));
+}
+
+function toggleSplitUsers() {
+    const panel = document.getElementById('splitUsersPanel');
+    const chevron = document.getElementById('splitUsersChevron');
+    panel.classList.toggle('open');
+    chevron.classList.toggle('open');
+}
+
+function updateSplitUsersCount() {
+    const count = document.querySelectorAll('.split-user-cb:checked').length;
+    const el = document.getElementById('splitUsersCount');
+    if (el) el.textContent = count + ' vybráno';
 }
 
 // ============================================================

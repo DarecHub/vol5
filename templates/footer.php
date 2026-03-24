@@ -3,9 +3,27 @@
     <!-- Toast notifikace kontejner -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- Confirm dialog – globální -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Potvrzení</h3>
+                <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:24px 20px;">
+                <i data-lucide="alert-triangle" style="width:40px;height:40px;color:var(--color-warning);margin-bottom:12px;"></i>
+                <p id="confirmModalMessage" style="font-size:0.95rem;color:var(--color-text);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('confirmModal')">Zrušit</button>
+                <button class="btn btn-danger" id="confirmModalOk">Potvrdit</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Member detail modal – globální, použitelný z celé appky -->
     <div class="modal-overlay" id="memberModal">
-        <div class="modal" style="max-width:400px;">
+        <div class="modal modal-sm">
             <div class="modal-header">
                 <h3 class="modal-title" id="memberModalTitle">Detail člena</h3>
                 <button class="modal-close" onclick="closeModal('memberModal')">&times;</button>
@@ -41,51 +59,48 @@
         const _ini = (n) => { const p = (n||'').trim().split(' '); return (p[0][0]||'').toUpperCase() + (p.length>1?(p[p.length-1][0]||'').toUpperCase():''); };
         const avatarHtml = u.avatar_url
             ? `<img src="${escapeHtml(u.avatar_url)}" alt="${escapeHtml(u.name)}"
-                   style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--gray-200);cursor:zoom-in;"
                    onclick="openPhotoFullscreen('${escapeHtml(u.avatar_url)}', '${escapeHtml(u.name)}')">`
-            : `<span style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;font-size:2rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">
-                   ${escapeHtml(_ini(u.name))}
-               </span>`;
+            : `<span class="avatar-initials">${escapeHtml(_ini(u.name))}</span>`;
 
         const phoneHtml = u.phone
-            ? `<a href="tel:${escapeHtml(u.phone)}" style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--gray-100);text-decoration:none;color:var(--gray-800);">
-                   <span style="width:36px;height:36px;border-radius:10px;background:#dcfce7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                       <i data-lucide="phone" style="width:17px;height:17px;color:#16a34a;"></i>
+            ? `<a href="tel:${escapeHtml(u.phone)}" class="member-modal-row">
+                   <span class="member-modal-icon phone">
+                       <i data-lucide="phone" style="width:17px;height:17px;"></i>
                    </span>
                    <div>
-                       <div style="font-size:0.72rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Telefon</div>
-                       <div style="font-weight:600;font-size:0.95rem;">${escapeHtml(u.phone)}</div>
+                       <div class="member-modal-label">Telefon</div>
+                       <div class="member-modal-value">${escapeHtml(u.phone)}</div>
                    </div>
-                   <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--gray-300);margin-left:auto;"></i>
+                   <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--color-text-tertiary);margin-left:auto;"></i>
                </a>` : '';
 
         const emailHtml = u.email
-            ? `<a href="mailto:${escapeHtml(u.email)}" style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--gray-100);text-decoration:none;color:var(--gray-800);">
-                   <span style="width:36px;height:36px;border-radius:10px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                       <i data-lucide="mail" style="width:17px;height:17px;color:#2563eb;"></i>
+            ? `<a href="mailto:${escapeHtml(u.email)}" class="member-modal-row">
+                   <span class="member-modal-icon email">
+                       <i data-lucide="mail" style="width:17px;height:17px;"></i>
                    </span>
                    <div>
-                       <div style="font-size:0.72rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Email</div>
-                       <div style="font-weight:600;font-size:0.95rem;">${escapeHtml(u.email)}</div>
+                       <div class="member-modal-label">Email</div>
+                       <div class="member-modal-value">${escapeHtml(u.email)}</div>
                    </div>
-                   <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--gray-300);margin-left:auto;"></i>
+                   <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--color-text-tertiary);margin-left:auto;"></i>
                </a>` : '';
 
         const boatHtml = u.boat_name
-            ? `<div style="display:flex;align-items:center;gap:10px;padding:14px 20px;">
-                   <span style="width:36px;height:36px;border-radius:10px;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                       <i data-lucide="sailboat" style="width:17px;height:17px;color:#ca8a04;"></i>
+            ? `<div class="member-modal-row">
+                   <span class="member-modal-icon boat">
+                       <i data-lucide="sailboat" style="width:17px;height:17px;"></i>
                    </span>
                    <div>
-                       <div style="font-size:0.72rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Loď</div>
-                       <div style="font-weight:600;font-size:0.95rem;">${escapeHtml(u.boat_name)}</div>
+                       <div class="member-modal-label">Loď</div>
+                       <div class="member-modal-value">${escapeHtml(u.boat_name)}</div>
                    </div>
                </div>` : '';
 
         body.innerHTML = `
-            <div style="text-align:center;padding:28px 20px 20px;border-bottom:1px solid var(--gray-100);">
+            <div class="member-modal-hero">
                 ${avatarHtml}
-                <div style="font-size:1.1rem;font-weight:700;color:var(--gray-800);margin-top:12px;">${escapeHtml(u.name)}</div>
+                <div class="member-name">${escapeHtml(u.name)}</div>
             </div>
             <div>
                 ${phoneHtml}
@@ -128,7 +143,7 @@
                     img.src = json.data.avatar;
                     img.alt = 'Avatar';
                     img.className = 'avatar avatar-lg';
-                    img.style.cssText = 'object-fit:cover;border:2px solid var(--gray-200);';
+                    img.style.cssText = 'object-fit:cover;border:2px solid var(--color-border);';
                     wrap.innerHTML = '';
                     wrap.appendChild(img);
                 }

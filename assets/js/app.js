@@ -103,6 +103,27 @@ document.addEventListener('keydown', function(e) {
         document.body.style.overflow = '';
         const menu = document.getElementById('mobileMenu');
         if (menu && menu.classList.contains('open')) toggleMobileMenu();
+        const dd = document.getElementById('userDropdown');
+        if (dd) dd.classList.remove('open');
+    }
+});
+
+// ============================================================
+// USER DROPDOWN (desktop popup)
+// ============================================================
+
+function toggleUserDropdown() {
+    const dd = document.getElementById('userDropdown');
+    if (!dd) return;
+    dd.classList.toggle('open');
+}
+
+// Zavřít dropdown klikem mimo
+document.addEventListener('click', function(e) {
+    const dd = document.getElementById('userDropdown');
+    const btn = document.getElementById('userDropdownToggle');
+    if (dd && dd.classList.contains('open') && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+        dd.classList.remove('open');
     }
 });
 
@@ -200,11 +221,59 @@ function formatDate(dateStr) {
 }
 
 /**
- * Potvrzovací dialog
+ * Potvrzovací dialog – stylizovaný modal místo browser confirm()
+ * @param {string} message - Zpráva k zobrazení
+ * @param {function} onConfirm - Callback při potvrzení
  */
-function confirmAction(message) {
-    return confirm(message);
+function confirmAction(message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    if (!modal) {
+        // Fallback pokud modal neexistuje
+        if (confirm(message)) onConfirm();
+        return;
+    }
+    document.getElementById('confirmModalMessage').textContent = message;
+    const confirmBtn = document.getElementById('confirmModalOk');
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+    newBtn.addEventListener('click', function() {
+        closeModal('confirmModal');
+        onConfirm();
+    });
+    openModal('confirmModal');
 }
+
+// ============================================================
+// THEME TOGGLE (dark/light mode)
+// ============================================================
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    // Desktop dropdown icon
+    const icon = document.getElementById('themeToggleIcon');
+    if (icon) icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    const label = document.getElementById('themeToggleLabel');
+    if (label) label.textContent = isDark ? 'Světlý režim' : 'Tmavý režim';
+    // Drawer icon
+    const iconDrawer = document.getElementById('themeToggleIconDrawer');
+    if (iconDrawer) iconDrawer.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    const labelDrawer = document.getElementById('themeToggleLabelDrawer');
+    if (labelDrawer) labelDrawer.textContent = isDark ? 'Světlý režim' : 'Tmavý režim';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Initialize theme icon on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateThemeIcon();
+});
 
 /**
  * Odpočet (countdown) – pro dashboard
@@ -237,3 +306,16 @@ function initCountdown(targetDate, elementId) {
     update();
     setInterval(update, 1000);
 }
+
+// ============================================================
+// SCROLL FADE INDICATORS
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.wallet-stats-row').forEach(function(row) {
+        row.addEventListener('scroll', function() {
+            const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 8;
+            row.classList.toggle('scrolled-end', atEnd);
+        }, { passive: true });
+    });
+});

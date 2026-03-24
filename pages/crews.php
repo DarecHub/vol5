@@ -20,7 +20,7 @@ function crewInitials(string $name): string {
 ?>
 
 <h1 class="page-title">
-    <i data-lucide="users" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Posádky
+    <i data-lucide="users" class="page-title-icon"></i>Posádky
 </h1>
 
 <div class="card-grid">
@@ -50,18 +50,20 @@ function crewInitials(string $name): string {
                 ?>
                     <div class="crew-member" onclick="openMemberModal(<?= (int)$m['id'] ?>)" style="cursor:pointer;">
                         <?= avatarHtml($m, 'md', $isMine ? 'accent' : $colorClass) ?>
-                        <div style="flex:1;min-width:0;">
+                        <div class="crew-member-info">
                             <div class="crew-member-name"><?= e($m['name']) ?><?= $isMine ? ' <span class="badge badge-accent" style="font-size:.7rem;">já</span>' : '' ?></div>
                         </div>
-                        <div class="crew-member-contact">
+                        <div class="crew-member-contact" onclick="event.stopPropagation();">
                             <?php if ($m['phone']): ?>
-                                <a href="tel:<?= e($m['phone']) ?>" style="display:flex;align-items:center;gap:4px;">
-                                    <i data-lucide="phone" style="width:13px;height:13px;"></i><?= e($m['phone']) ?>
+                                <a href="tel:<?= e($m['phone']) ?>" class="contact-link phone-link" title="<?= e($m['phone']) ?>">
+                                    <i data-lucide="phone" style="width:15px;height:15px;"></i>
+                                    <span class="contact-text"><?= e($m['phone']) ?></span>
                                 </a>
                             <?php endif; ?>
                             <?php if ($m['email']): ?>
-                                <a href="mailto:<?= e($m['email']) ?>" style="display:flex;align-items:center;gap:4px;">
-                                    <i data-lucide="mail" style="width:13px;height:13px;"></i><?= e($m['email']) ?>
+                                <a href="mailto:<?= e($m['email']) ?>" class="contact-link email-link" title="<?= e($m['email']) ?>">
+                                    <i data-lucide="mail" style="width:15px;height:15px;"></i>
+                                    <span class="contact-text"><?= e($m['email']) ?></span>
                                 </a>
                             <?php endif; ?>
                         </div>

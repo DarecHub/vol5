@@ -33,10 +33,10 @@ renderHeader('Nákupní seznamy', 'shopping');
 
 <div class="d-flex-between mb-2">
     <h1 class="page-title" style="margin-bottom: 0;">
-        <i data-lucide="shopping-cart" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--primary-light);"></i>Nákupní seznam
+        <i data-lucide="shopping-cart" class="page-title-icon"></i>Nákupní seznam
     </h1>
     <!-- Tlačítko Přidat jen na desktopu; mobil má FAB -->
-    <button class="btn btn-success" style="display:none;" id="addItemBtnDesktop" onclick="openAddItemModal()">
+    <button class="btn btn-success desktop-only-btn" id="addItemBtnDesktop" onclick="openAddItemModal()">
         <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat
     </button>
 </div>
@@ -54,13 +54,13 @@ renderHeader('Nákupní seznamy', 'shopping');
 
 <!-- Filtr kategorie -->
 <div class="mb-2" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <select class="form-control" id="categoryFilter" onchange="loadItems()" style="max-width:200px;">
+    <select class="form-control" id="categoryFilter" onchange="loadItems()">
         <option value="">Všechny kategorie</option>
         <?php foreach ($categoryNames as $k => $v): ?>
             <option value="<?= $k ?>"><?= e($v) ?></option>
         <?php endforeach; ?>
     </select>
-    <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--gray-600);">
+    <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--color-text-secondary);">
         <input type="checkbox" id="hideBoughtFilter" onchange="loadItems()">
         Skrýt koupené
     </label>
@@ -144,10 +144,7 @@ const categoryIcons = <?= json_encode($categoryIcons) ?>;
 let currentBoat = <?= json_encode($currentBoatId) ?>;
 let editingItemId = null;
 
-// Ukázat desktop tlačítko Přidat (FAB je pro mobil, ale na desktopu FAB skrytý)
 document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('addItemBtnDesktop');
-    if (btn) btn.style.display = '';
     lucide.createIcons();
 });
 
@@ -179,7 +176,7 @@ async function loadItems() {
     const container2 = document.getElementById('shoppingBody');
 
     if (items.length === 0) {
-        container2.innerHTML = '<div class="empty-state"><i data-lucide="shopping-cart" style="width:36px;height:36px;color:var(--gray-300);margin-bottom:8px;"></i><p>Žádné položky.</p></div>';
+        container2.innerHTML = '<div class="empty-state"><i data-lucide="shopping-cart" style="width:36px;height:36px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Žádné položky.</p></div>';
         lucide.createIcons();
     } else {
         // Seskupit dle kategorie
@@ -207,14 +204,16 @@ async function loadItems() {
                     </div>
                     <span class="shop-item-name">${escapeHtml(item.item_name)}</span>
                     ${item.quantity ? `<span class="shop-item-qty">${escapeHtml(item.quantity)}</span>` : ''}
-                    ${item.assigned_to_name ? `<span style="font-size:.75rem;color:var(--gray-500);">${escapeHtml(item.assigned_to_name)}</span>` : ''}
-                    ${item.price ? `<span style="font-size:.78rem;font-weight:600;color:var(--primary);">${formatMoney(item.price,item.currency)}</span>` : ''}
-                    <button class="icon-btn" onclick='editItem(${JSON.stringify(item)})' title="Upravit">
-                        <i data-lucide="pencil" style="width:13px;height:13px;"></i>
-                    </button>
-                    <button class="icon-btn icon-btn-danger" onclick="deleteItem(${item.id})" title="Smazat">
-                        <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
-                    </button>
+                    ${item.assigned_to_name ? `<span style="font-size:.75rem;color:var(--color-text-secondary);">${escapeHtml(item.assigned_to_name)}</span>` : ''}
+                    ${item.price ? `<span style="font-size:.78rem;font-weight:600;color:var(--color-brand);">${formatMoney(item.price,item.currency)}</span>` : ''}
+                    <span class="shop-item-actions">
+                        <button class="icon-btn" onclick='editItem(${JSON.stringify(item)})' title="Upravit">
+                            <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+                        </button>
+                        <button class="icon-btn icon-btn-danger" onclick="deleteItem(${item.id})" title="Smazat">
+                            <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+                        </button>
+                    </span>
                 </div>`;
             }).join('');
         }
@@ -301,15 +300,16 @@ async function toggleBought(id, bought) {
     }
 }
 
-async function deleteItem(id) {
-    if (!confirm('Opravdu smazat tuto položku?')) return;
-    const res = await apiCall('/api/shopping.php?action=delete', 'POST', { id: id });
-    if (res.success) {
-        showToast('Položka smazána.', 'success');
-        loadItems();
-    } else {
-        showToast(res.error || 'Chyba mazání.', 'error');
-    }
+function deleteItem(id) {
+    confirmAction('Opravdu smazat tuto položku?', async function() {
+        const res = await apiCall('/api/shopping.php?action=delete', 'POST', { id: id });
+        if (res.success) {
+            showToast('Položka smazána.', 'success');
+            loadItems();
+        } else {
+            showToast(res.error || 'Chyba mazání.', 'error');
+        }
+    });
 }
 
 // Načíst při startu
