@@ -80,11 +80,15 @@ function isAdmin(): bool
 }
 
 /**
- * Vyžaduje přihlášení – pokud není přihlášen, přesměruje na login
+ * Vyžaduje přihlášení – pokud není přihlášen, přesměruje na login.
+ * Pro AJAX požadavky vrátí JSON chybu místo redirect (302 není parsovatelný).
  */
 function requireLogin(): void
 {
     if (!isLoggedIn() && !isAdmin()) {
+        if (isAjax()) {
+            jsonResponse(false, null, 'Přihlášení vypršelo. Obnovte stránku.');
+        }
         setFlash('error', 'Pro přístup se musíte přihlásit.');
         redirect('/index.php');
     }
@@ -115,6 +119,49 @@ function currentUserId(): ?int
 function currentUserName(): string
 {
     return $_SESSION['user_name'] ?? 'Host';
+}
+
+/**
+ * Vrátí HTML pro avatar uživatele – foto pokud existuje, jinak initials kruh.
+ * $user = array s klíči 'name' a 'avatar'
+ * $size = 'sm' | 'md' | 'lg'
+ * $colorClass = třída avatar-* pro barvu initials
+ */
+function avatarHtml(array $user, string $size = 'md', string $colorClass = 'primary'): string
+{
+    $initials = '';
+    $parts = explode(' ', trim($user['name'] ?? ''));
+    $initials .= strtoupper(mb_substr($parts[0] ?? '', 0, 1));
+    if (count($parts) > 1) $initials .= strtoupper(mb_substr(end($parts), 0, 1));
+
+    if (!empty($user['avatar'])) {
+        $src = e('/' . $user['avatar']);
+        return '<img src="' . $src . '" alt="' . e($user['name']) . '" class="avatar avatar-' . $size . '" style="object-fit:cover;border:2px solid var(--color-border);">';
+    }
+
+    return '<span class="avatar avatar-' . $size . ' avatar-' . $colorClass . '">' . e($initials) . '</span>';
+}
+
+/**
+ * Vrátí URL avataru aktuálně přihlášeného uživatele (nebo null)
+ */
+function currentUserAvatar(): ?string
+{
+    $uid = currentUserId();
+    if (!$uid) return null;
+    static $avatarCache = [];
+    if (!isset($avatarCache[$uid])) {
+        try {
+            $db = getDB();
+            $stmt = $db->prepare("SELECT avatar FROM users WHERE id = ?");
+            $stmt->execute([$uid]);
+            $avatarCache[$uid] = $stmt->fetchColumn() ?: null;
+        } catch (\Exception $e) {
+            $avatarCache[$uid] = null;
+        }
+    }
+    $path = $avatarCache[$uid];
+    return $path ? '/' . $path : null;
 }
 
 /**
@@ -423,6 +470,7 @@ function renderHeader(string $title, string $activePage = ''): void
 {
     $tripName = getSetting('trip_name', 'Plavba');
     $userName = currentUserName();
+    $userAvatar = currentUserAvatar();
     $boatId = currentBoatId();
     $boatName = '';
     if ($boatId) {

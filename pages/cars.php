@@ -12,8 +12,12 @@ renderHeader('Auta', 'cars');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128663; Auta</h1>
-    <button class="btn btn-success" onclick="openAddCarModal()">+ Přidat auto</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="car" class="page-title-icon"></i>Auta
+    </h1>
+    <button class="btn btn-success desktop-only-btn" onclick="openAddCarModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat auto
+    </button>
 </div>
 
 <!-- Seznam aut -->
@@ -23,9 +27,17 @@ renderHeader('Auta', 'cars');
 
 <!-- Nepřiřazení -->
 <div class="card mt-2" id="unassignedCard" style="display: none;">
-    <div class="card-header">Bez přiřazeného auta</div>
-    <div id="unassignedList"></div>
+    <div class="card-header" style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="user-x" style="width:16px;height:16px;color:var(--color-danger);"></i>
+        Bez přiřazeného auta
+    </div>
+    <div id="unassignedList" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;"></div>
 </div>
+
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddCarModal()" title="Přidat auto">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
 
 <!-- Modal: Přidat auto -->
 <div class="modal-overlay" id="carModal">
@@ -76,54 +88,81 @@ async function loadCars() {
     const unassigned = res.data.unassigned;
 
     if (cars.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128663;</div><p>Zatím žádná auta. Přidejte první.</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="car" style="width:40px;height:40px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Zatím žádná auta. Přidejte první.</p></div>';
+        lucide.createIcons();
     } else {
         container.innerHTML = cars.map(car => {
-            const passengerCount = car.passengers.length + 1; // +řidič
-            const freeSeats = car.seats - passengerCount;
+            const occupied = car.passengers.length + 1;
+            const freeSeats = car.seats - occupied;
+            const pct = Math.round(occupied / car.seats * 100);
+            const full = freeSeats <= 0;
 
-            return `<div class="card" style="margin-bottom: 0;">
-                <div class="d-flex-between mb-1">
-                    <div>
-                        <span class="fw-bold text-lg">${escapeHtml(car.car_name || 'Auto')}</span>
-                        <span class="badge badge-gray">${passengerCount}/${car.seats} míst</span>
+            const driverInitials = car.driver_name.trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+
+            return `<div class="card car-card">
+                <div class="car-card-header">
+                    <span class="car-card-icon">
+                        <i data-lucide="car" style="width:20px;height:20px;"></i>
+                    </span>
+                    <div class="car-card-info">
+                        <div class="car-card-title">${escapeHtml(car.car_name || 'Auto')}</div>
+                        <div class="car-card-meta">${occupied}/${car.seats} míst · ${full ? '<span class="full">plné</span>' : freeSeats + ' volných'}</div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCar(${car.id})" title="Smazat auto">&#10005;</button>
+                    <button class="icon-btn icon-btn-danger" onclick="deleteCar(${car.id})" title="Smazat auto">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    </button>
                 </div>
-                <div class="mb-1">
-                    <span class="badge badge-accent">&#128100; Řidič: ${escapeHtml(car.driver_name)}</span>
+                <div class="progress-bar-wrap mb-1">
+                    <div class="progress-bar-fill ${full ? 'danger' : 'primary'}" style="width:${pct}%;"></div>
+                </div>
+                <div class="car-card-driver">
+                    <i data-lucide="steering-wheel" style="width:15px;height:15px;color:var(--color-brand);flex-shrink:0;"></i>
+                    <span class="avatar avatar-sm avatar-accent">${escapeHtml(driverInitials)}</span>
+                    <span class="car-card-driver-name">${escapeHtml(car.driver_name)}</span>
+                    <span class="badge badge-accent ml-auto">Řidič</span>
                 </div>
                 ${car.passengers.length > 0 ? `
-                    <div class="mb-1">
-                        ${car.passengers.map(p => `
-                            <div class="d-flex-between" style="padding: 4px 0; border-bottom: 1px solid var(--gray-100);">
-                                <span>${escapeHtml(p.name)}</span>
-                                <button class="btn btn-outline btn-sm" onclick="removePassenger(${p.passenger_id})" title="Odebrat">&#10005;</button>
-                            </div>
-                        `).join('')}
+                    <div class="car-card-passengers">
+                        ${car.passengers.map(p => {
+                            const pi = p.name.trim().split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+                            return `<div class="car-card-passenger">
+                                <span class="avatar avatar-sm avatar-primary">${escapeHtml(pi)}</span>
+                                <span class="car-card-passenger-name">${escapeHtml(p.name)}</span>
+                                <button class="icon-btn" onclick="removePassenger(${p.passenger_id})" title="Odebrat">
+                                    <i data-lucide="x" style="width:12px;height:12px;"></i>
+                                </button>
+                            </div>`;
+                        }).join('')}
                     </div>
                 ` : ''}
-                ${freeSeats > 0 ? `
-                    <div class="mt-1">
-                        <select class="form-control" id="add-passenger-${car.id}" style="display: inline-block; width: auto; max-width: 180px;">
+                ${!full && unassigned.length > 0 ? `
+                    <div class="car-card-add-row">
+                        <select class="form-control" id="add-passenger-${car.id}" style="flex:1;">
                             <option value="">Přidat spolujezdce...</option>
                             ${unassigned.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join('')}
                         </select>
-                        <button class="btn btn-success btn-sm" onclick="addPassenger(${car.id})">+</button>
+                        <button class="btn btn-success btn-sm" onclick="addPassenger(${car.id})">
+                            <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                        </button>
                     </div>
-                ` : '<div class="text-sm text-muted mt-1">Auto je plné</div>'}
-                ${car.note ? `<div class="text-sm text-muted mt-1">&#128172; ${escapeHtml(car.note)}</div>` : ''}
+                ` : ''}
+                ${car.note ? `<div class="car-card-note"><i data-lucide="message-circle" style="width:12px;height:12px;flex-shrink:0;"></i>${escapeHtml(car.note)}</div>` : ''}
             </div>`;
         }).join('');
+        lucide.createIcons();
     }
 
     // Nepřiřazení
     const unassignedCard = document.getElementById('unassignedCard');
     if (unassigned.length > 0) {
         unassignedCard.style.display = 'block';
-        document.getElementById('unassignedList').innerHTML = unassigned.map(u =>
-            `<span class="badge badge-danger" style="margin: 2px;">${escapeHtml(u.name)}</span>`
-        ).join(' ');
+        document.getElementById('unassignedList').innerHTML = unassigned.map(u => {
+            const ui = u.name.trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+            return `<div class="car-card-passenger">
+                <span class="avatar avatar-sm avatar-gray">${escapeHtml(ui)}</span>
+                <span class="car-card-passenger-name">${escapeHtml(u.name)}</span>
+            </div>`;
+        }).join('');
     } else {
         unassignedCard.style.display = 'none';
     }
@@ -157,13 +196,14 @@ async function saveCar() {
     }
 }
 
-async function deleteCar(id) {
-    if (!confirm('Opravdu smazat toto auto?')) return;
-    const res = await apiCall('/api/cars.php?action=delete_car', 'POST', { id: id });
-    if (res.success) {
-        showToast('Auto smazáno.', 'success');
-        loadCars();
-    }
+function deleteCar(id) {
+    confirmAction('Opravdu smazat toto auto?', async function() {
+        const res = await apiCall('/api/cars.php?action=delete_car', 'POST', { id: id });
+        if (res.success) {
+            showToast('Auto smazáno.', 'success');
+            loadCars();
+        }
+    });
 }
 
 async function addPassenger(carId) {

@@ -35,32 +35,90 @@ if ($userId) {
 }
 
 $balance = $paidTotal - $shareTotal;
+$paidPct = $shareTotal > 0 ? min(100, round($paidTotal / $shareTotal * 100)) : ($paidTotal > 0 ? 100 : 0);
+
+// Barva a ikona lodi dle boat_id
+$boatColorClass = $boatId == 2 ? 'boat2' : 'boat1';
 
 renderHeader('Dashboard', 'dashboard');
+
+// helper: initials z jména
+function initials(string $name): string {
+    $parts = explode(' ', trim($name));
+    $i = strtoupper(mb_substr($parts[0], 0, 1));
+    if (count($parts) > 1) $i .= strtoupper(mb_substr(end($parts), 0, 1));
+    return $i;
+}
 ?>
 
-<h1 class="page-title">Ahoj, <?= e(currentUserName()) ?>!</h1>
+<?php
+// Countdown stav
+$tripInPast = false;
+$tripInFuture = false;
+if ($tripDateFrom) {
+    $now = new DateTime();
+    $target = new DateTime($tripDateFrom);
+    if ($now >= $target) $tripInPast = true;
+    else $tripInFuture = true;
+}
+$tripDateTo = getSetting('trip_date_to', '');
+$tripEnded = false;
+if ($tripDateTo) {
+    $now2 = new DateTime();
+    $end = new DateTime($tripDateTo);
+    if ($now2 > $end) $tripEnded = true;
+}
+?>
 
-<!-- Odpočet -->
-<?php if ($tripDateFrom): ?>
-<div class="countdown" id="countdown">
+<!-- Hero karta -->
+<div class="dash-hero">
+    <div class="dash-hero-top">
+        <div>
+            <div class="dash-hero-greeting">Ahoj, <?= e(currentUserName()) ?>!</div>
+            <?php if ($boat): ?>
+            <div class="dash-hero-boat">
+                <i data-lucide="sailboat" style="width:12px;height:12px;flex-shrink:0;"></i>
+                <?= e($boat['name']) ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <div class="dash-hero-balance <?= $balance >= 0 ? 'positive' : 'negative' ?>">
+            <span class="dash-hero-balance-label"><?= $balance >= 0 ? 'Přeplatek' : 'Dlužíte' ?></span>
+            <span class="dash-hero-balance-value"><?= formatMoney(abs($balance)) ?></span>
+        </div>
+    </div>
+    <?php if (!empty($boatMembers)): ?>
+    <div class="dash-hero-crew">
+        <?php foreach ($boatMembers as $m):
+            $isMine = $m['id'] == $userId;
+            $color = $isMine ? 'accent' : $boatColorClass;
+        ?>
+            <div class="dash-hero-member" onclick="openMemberModal(<?= (int)$m['id'] ?>)">
+                <?= avatarHtml($m, 'sm', $color) ?>
+                <span class="dash-hero-member-name" style="font-weight:<?= $isMine ? '700' : '500' ?>;"><?= e($m['name']) ?></span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Status plavby -->
+<?php if ($tripEnded): ?>
+    <div class="dash-status ended">
+        <i data-lucide="flag" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba skončila
+    </div>
+<?php elseif ($tripInPast): ?>
+    <div class="dash-status active">
+        <i data-lucide="anchor" style="width:15px;height:15px;flex-shrink:0;"></i> Plavba probíhá!
+    </div>
+<?php elseif ($tripInFuture): ?>
+<div class="countdown" id="countdown" style="margin-bottom:12px;">
+    <div class="countdown-title">Do plachty zbývá</div>
     <div class="countdown-numbers">
-        <div class="countdown-item">
-            <div class="countdown-value cd-days">–</div>
-            <div class="countdown-label">dní</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-hours">–</div>
-            <div class="countdown-label">hodin</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-minutes">–</div>
-            <div class="countdown-label">minut</div>
-        </div>
-        <div class="countdown-item">
-            <div class="countdown-value cd-seconds">–</div>
-            <div class="countdown-label">sekund</div>
-        </div>
+        <div class="countdown-item"><div class="countdown-value cd-days">–</div><div class="countdown-label">dní</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-hours">–</div><div class="countdown-label">hodin</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-minutes">–</div><div class="countdown-label">minut</div></div>
+        <div class="countdown-item"><div class="countdown-value cd-seconds">–</div><div class="countdown-label">sekund</div></div>
     </div>
 </div>
 <script>
@@ -70,61 +128,28 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <?php endif; ?>
 
-<!-- Moje loď -->
-<div class="card">
-    <div class="card-header">&#9973; Tvoje loď: <?= e($boat['name'] ?? 'Nepřiřazena') ?></div>
-    <div class="d-flex flex-wrap gap-1">
-        <?php foreach ($boatMembers as $m): ?>
-            <span class="badge <?= $m['id'] == $userId ? 'badge-accent' : 'badge-boat' . $boatId ?>"><?= e($m['name']) ?></span>
-        <?php endforeach; ?>
-    </div>
-</div>
-
-<!-- Statistiky -->
-<div class="card-grid">
-    <div class="stat-card <?= $balance >= 0 ? 'success' : '' ?>" style="<?= $balance < 0 ? 'border-top: 4px solid var(--danger);' : '' ?>">
-        <div class="stat-card-value <?= $balance >= 0 ? 'balance-positive' : 'balance-negative' ?>">
-            <?= ($balance >= 0 ? '+' : '') . formatMoney($balance) ?>
-        </div>
-        <div class="stat-card-label">Tvoje bilance</div>
-    </div>
-</div>
-
 <!-- Navigační karty -->
-<h2 class="section-title mt-3">Sekce</h2>
+<div class="dash-section-label">Sekce</div>
 <div class="nav-cards">
-    <a href="/pages/wallet.php" class="nav-card">
-        <span class="nav-card-icon">&#128176;</span>
-        Pokladna
-    </a>
-    <a href="/pages/itinerary.php" class="nav-card">
-        <span class="nav-card-icon">&#128506;</span>
-        Itinerář
-    </a>
-    <a href="/pages/crews.php" class="nav-card">
-        <span class="nav-card-icon">&#9973;</span>
-        Posádky
-    </a>
-    <a href="/pages/shopping.php" class="nav-card">
-        <span class="nav-card-icon">&#128722;</span>
-        Nákupy
-    </a>
-    <a href="/pages/menu.php" class="nav-card">
-        <span class="nav-card-icon">&#127858;</span>
-        Jídelníček
-    </a>
-    <a href="/pages/checklist.php" class="nav-card">
-        <span class="nav-card-icon">&#9989;</span>
-        Co s sebou
-    </a>
-    <a href="/pages/logbook.php" class="nav-card">
-        <span class="nav-card-icon">&#128214;</span>
-        Deník
-    </a>
-    <a href="/pages/cars.php" class="nav-card">
-        <span class="nav-card-icon">&#128663;</span>
-        Auta
-    </a>
+    <?php
+    $navItems = [
+        ['href' => '/pages/wallet.php',    'icon' => 'wallet',       'label' => 'Pokladna',    'css' => 'nc-wallet'],
+        ['href' => '/pages/shopping.php',  'icon' => 'shopping-cart','label' => 'Nákupy',      'css' => 'nc-shopping'],
+        ['href' => '/pages/logbook.php',   'icon' => 'book-open',    'label' => 'Deník',       'css' => 'nc-logbook'],
+        ['href' => '/pages/itinerary.php', 'icon' => 'map',          'label' => 'Itinerář',    'css' => 'nc-itinerary'],
+        ['href' => '/pages/crews.php',     'icon' => 'users',        'label' => 'Posádky',     'css' => 'nc-crews'],
+        ['href' => '/pages/menu.php',      'icon' => 'utensils',     'label' => 'Jídelníček',  'css' => 'nc-menu'],
+        ['href' => '/pages/checklist.php', 'icon' => 'check-square', 'label' => 'Co s sebou',  'css' => 'nc-checklist'],
+        ['href' => '/pages/cars.php',      'icon' => 'car',          'label' => 'Auta',        'css' => 'nc-cars'],
+    ];
+    foreach ($navItems as $n): ?>
+        <a href="<?= $n['href'] ?>" class="nav-card">
+            <span class="nav-card-icon-wrap <?= $n['css'] ?>">
+                <i data-lucide="<?= $n['icon'] ?>" style="width:22px;height:22px;stroke-width:1.75;"></i>
+            </span>
+            <?= $n['label'] ?>
+        </a>
+    <?php endforeach; ?>
 </div>
 
 <?php renderFooter(); ?>

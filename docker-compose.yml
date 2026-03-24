@@ -1,0 +1,43 @@
+services:
+  web:
+    image: php:8.2-apache
+    container_name: vol5_web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/apache.conf:/etc/apache2/sites-enabled/000-default.conf
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    command: >
+      bash -c "
+        docker-php-ext-install pdo pdo_mysql &&
+        a2enmod rewrite headers &&
+        apache2-foreground
+      "
+
+  db:
+    image: mysql:8.0
+    container_name: vol5_db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: vol5
+      MYSQL_USER: vol5user
+      MYSQL_PASSWORD: vol5pass
+    volumes:
+      - ./docker/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./docker/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - vol5_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  vol5_mysql_data:

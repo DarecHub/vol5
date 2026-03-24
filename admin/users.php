@@ -69,12 +69,18 @@ $users = getAllUsers();
 renderHeader('Správa uživatelů', 'admin');
 ?>
 
-<h1 class="page-title">&#128101; Správa uživatelů</h1>
+<h1 class="page-title"><i data-lucide="users" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;color:var(--color-brand);"></i>Správa uživatelů</h1>
 
 <div class="admin-nav">
-    <a href="/admin/index.php" class="btn btn-outline btn-sm">Dashboard</a>
-    <a href="/admin/users.php" class="btn btn-primary btn-sm active">Uživatelé</a>
-    <a href="/admin/settings.php" class="btn btn-outline btn-sm">Nastavení</a>
+    <a href="/admin/index.php" class="btn btn-outline btn-sm">
+        <i data-lucide="layout-dashboard" style="width:14px;height:14px;"></i> Dashboard
+    </a>
+    <a href="/admin/users.php" class="btn btn-primary btn-sm active">
+        <i data-lucide="users" style="width:14px;height:14px;"></i> Uživatelé
+    </a>
+    <a href="/admin/settings.php" class="btn btn-outline btn-sm">
+        <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i> Nastavení
+    </a>
 </div>
 
 <?php if ($error): ?>
@@ -124,7 +130,7 @@ renderHeader('Správa uživatelů', 'admin');
     <div class="card-header">Členové posádky (<?= count($users) ?>)</div>
     <?php if (empty($users)): ?>
         <div class="empty-state">
-            <div class="empty-state-icon">&#128101;</div>
+            <i data-lucide="users" style="width:40px;height:40px;color:var(--color-text-tertiary);margin-bottom:8px;"></i>
             <p>Zatím nejsou žádní členové. Přidejte je výše.</p>
         </div>
     <?php else: ?>

@@ -13,60 +13,74 @@ renderHeader('Deník plavby', 'logbook');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128214; Deník plavby</h1>
-    <button class="btn btn-success" onclick="openAddLogModal()">+ Přidat zápis</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="book-open" class="page-title-icon"></i>Deník plavby
+    </h1>
+    <button class="btn btn-success desktop-only-btn" onclick="openAddLogModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat zápis
+    </button>
 </div>
 
-<!-- Záložky lodí -->
+<!-- Záložky lodí s ikonou -->
 <div class="tabs">
     <?php foreach ($boats as $b): ?>
         <button class="tab-btn boat<?= $b['id'] ?> <?= $b['id'] == $currentBoatId ? 'active' : '' ?>"
                 data-tab-group="logbook" data-tab-id="logboat-<?= $b['id'] ?>"
                 onclick="switchLogBoat(<?= $b['id'] ?>)">
-            <?= e($b['name']) ?>
+            <i data-lucide="sailboat" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i><?= e($b['name']) ?>
         </button>
     <?php endforeach; ?>
 </div>
 
-<!-- Statistiky -->
-<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
-    <div class="stat-card boat1">
-        <div class="stat-card-value" id="stat-total-nm">–</div>
-        <div class="stat-card-label">Celkem NM</div>
+<!-- Statistiky s ikonami -->
+<div class="logbook-stats">
+    <div class="stat-card brand">
+        <div class="stat-card-inner">
+            <div class="stat-card-icon-wrap brand"><i data-lucide="navigation" style="width:20px;height:20px;"></i></div>
+            <div class="stat-card-info">
+                <div class="stat-card-value" id="stat-total-nm">–</div>
+                <div class="stat-card-label">Celkem NM</div>
+            </div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-card-value" id="stat-avg-nm">–</div>
-        <div class="stat-card-label">Průměr/den</div>
+    <div class="stat-card info">
+        <div class="stat-card-inner">
+            <div class="stat-card-icon-wrap info"><i data-lucide="trending-up" style="width:20px;height:20px;"></i></div>
+            <div class="stat-card-info">
+                <div class="stat-card-value" id="stat-avg-nm">–</div>
+                <div class="stat-card-label">Průměr/den</div>
+            </div>
+        </div>
     </div>
     <div class="stat-card accent">
-        <div class="stat-card-value" id="stat-max-nm">–</div>
-        <div class="stat-card-label">Nejdelší etapa</div>
+        <div class="stat-card-inner">
+            <div class="stat-card-icon-wrap accent"><i data-lucide="zap" style="width:20px;height:20px;"></i></div>
+            <div class="stat-card-info">
+                <div class="stat-card-value" id="stat-max-nm">–</div>
+                <div class="stat-card-label">Nejdelší etapa</div>
+            </div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-card-value" id="stat-days">–</div>
-        <div class="stat-card-label">Dní na moři</div>
+    <div class="stat-card success">
+        <div class="stat-card-inner">
+            <div class="stat-card-icon-wrap success"><i data-lucide="calendar" style="width:20px;height:20px;"></i></div>
+            <div class="stat-card-info">
+                <div class="stat-card-value" id="stat-days">–</div>
+                <div class="stat-card-label">Dní na moři</div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Tabulka -->
-<div class="card" id="logbookCard" style="position: relative;">
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Datum</th>
-                    <th>Odkud</th>
-                    <th>Kam</th>
-                    <th>NM</th>
-                    <th>Akce</th>
-                </tr>
-            </thead>
-            <tbody id="logbookBody">
-                <tr><td colspan="5" class="text-center text-muted">Načítám...</td></tr>
-            </tbody>
-        </table>
-    </div>
+<!-- Log entry cards -->
+<div id="logbookCard" style="position:relative;">
+    <div id="logbookBody"><p class="text-center text-muted" style="padding:24px;">Načítám...</p></div>
 </div>
+
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddLogModal()" title="Přidat zápis">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
 
 <!-- Modal -->
 <div class="modal-overlay" id="logModal">
@@ -129,29 +143,50 @@ async function loadLogbook() {
     const entries = res.data.entries;
     const stats = res.data.stats;
 
-    // Statistiky
     document.getElementById('stat-total-nm').textContent = parseFloat(stats.total_nm).toFixed(1);
     document.getElementById('stat-avg-nm').textContent = parseFloat(stats.avg_nm).toFixed(1);
     document.getElementById('stat-max-nm').textContent = parseFloat(stats.max_nm).toFixed(1);
     document.getElementById('stat-days').textContent = stats.total_days;
 
-    const tbody = document.getElementById('logbookBody');
+    const body = document.getElementById('logbookBody');
     if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Žádné záznamy.</td></tr>';
-    } else {
-        tbody.innerHTML = entries.map(e => `
-            <tr>
-                <td class="fw-semi">${formatDate(e.date)}</td>
-                <td>${escapeHtml(e.location_from)}</td>
-                <td>${escapeHtml(e.location_to)}</td>
-                <td class="fw-bold">${parseFloat(e.nautical_miles).toFixed(1)}</td>
-                <td>
-                    <button class="btn btn-outline btn-sm" onclick='editLog(${JSON.stringify(e)})'>&#9998;</button>
-                </td>
-            </tr>
-            ${e.note ? `<tr><td colspan="5" class="text-sm text-muted" style="border-top: none; padding-top: 0;">&#128172; ${escapeHtml(e.note)}</td></tr>` : ''}
-        `).join('');
+        body.innerHTML = '<div class="empty-state"><i data-lucide="book-open" style="width:36px;height:36px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Žádné záznamy.</p></div>';
+        lucide.createIcons();
+        return;
     }
+
+    body.innerHTML = entries.map(e => {
+        const d = new Date(e.date);
+        const day = d.getDate();
+        const month = d.toLocaleString('cs', { month: 'short' });
+        return `<div class="log-entry-card">
+            <div class="log-entry-top">
+                <div class="log-entry-date-col">
+                    <div class="log-entry-day">${day}</div>
+                    <div class="log-entry-month">${month}</div>
+                </div>
+                <div class="log-entry-main">
+                    <div class="log-entry-route">
+                        <i data-lucide="anchor" style="width:13px;height:13px;vertical-align:middle;color:var(--color-brand);"></i>
+                        ${escapeHtml(e.location_from)} → ${escapeHtml(e.location_to)}
+                    </div>
+                    <div class="log-entry-meta">
+                        <span class="log-entry-nm">
+                            <i data-lucide="navigation" style="width:11px;height:11px;"></i>
+                            ${parseFloat(e.nautical_miles).toFixed(1)} NM
+                        </span>
+                    </div>
+                    ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ''}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0;">
+                    <button class="icon-btn" onclick='editLog(${JSON.stringify(e)})' title="Upravit">
+                        <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
 }
 
 function openAddLogModal() {
@@ -206,14 +241,16 @@ async function saveLog() {
     }
 }
 
-async function deleteLog() {
-    if (!editingLogId || !confirm('Opravdu smazat tento zápis?')) return;
-    const res = await apiCall('/api/logbook.php?action=delete', 'POST', { id: editingLogId });
-    if (res.success) {
-        closeModal('logModal');
-        showToast('Zápis smazán.', 'success');
-        loadLogbook();
-    }
+function deleteLog() {
+    if (!editingLogId) return;
+    confirmAction('Opravdu smazat tento zápis?', async function() {
+        const res = await apiCall('/api/logbook.php?action=delete', 'POST', { id: editingLogId });
+        if (res.success) {
+            closeModal('logModal');
+            showToast('Zápis smazán.', 'success');
+            loadLogbook();
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', loadLogbook);

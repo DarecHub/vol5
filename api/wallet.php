@@ -32,7 +32,8 @@ switch ($action) {
 
         $sql = "
             SELECT we.*,
-                   u.name AS paid_by_name
+                   u.name AS paid_by_name,
+                   u.avatar AS paid_by_avatar
             FROM wallet_expenses we
             LEFT JOIN users u ON we.paid_by = u.id
             $where
@@ -82,7 +83,7 @@ switch ($action) {
         $currency = $_POST['currency'] ?? 'EUR';
         $description = trim($_POST['description'] ?? '');
         $category = 'ostatni';
-        $expenseDate = $_POST['expense_date'] ?? date('Y-m-d H:i:s');
+        $expenseDateRaw = $_POST['expense_date'] ?? '';
         $splitType = $_POST['split_type'] ?? 'both';
         $splitUsers = $_POST['split_users'] ?? [];
 
@@ -90,6 +91,19 @@ switch ($action) {
             $splitUsers = explode(',', $splitUsers);
         }
         $splitUsers = array_map('intval', array_filter($splitUsers));
+
+        // Validace datumu – přijmeme "Y-m-d H:i:s", "Y-m-d H:i", "Y-m-d\TH:i:s", "Y-m-d\TH:i"
+        $expenseDate = date('Y-m-d H:i:s');
+        if ($expenseDateRaw !== '') {
+            $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i', $expenseDateRaw);
+            if ($parsedDate === false) {
+                jsonResponse(false, null, 'Neplatný formát datumu.');
+            }
+            $expenseDate = $parsedDate->format('Y-m-d H:i:s');
+        }
 
         // Validace
         if ($paidBy < 1) jsonResponse(false, null, 'Vyberte kdo zaplatil.');
@@ -184,7 +198,7 @@ switch ($action) {
         $currency = $_POST['currency'] ?? 'EUR';
         $description = trim($_POST['description'] ?? '');
         $category = 'ostatni';
-        $expenseDate = $_POST['expense_date'] ?? '';
+        $expenseDateRaw = $_POST['expense_date'] ?? '';
         $splitType = $_POST['split_type'] ?? 'both';
         $splitUsers = $_POST['split_users'] ?? [];
 
@@ -197,8 +211,29 @@ switch ($action) {
             jsonResponse(false, null, 'Neplatné údaje.');
         }
 
-        $rate = getExchangeRate();
-        $amountEur = ($currency === 'CZK') ? round($amount / $rate, 2) : $amount;
+        // Validace datumu
+        $expenseDate = $oldData['expense_date'];
+        if ($expenseDateRaw !== '') {
+            $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d H:i', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i:s', $expenseDateRaw)
+                       ?: DateTime::createFromFormat('Y-m-d\TH:i', $expenseDateRaw);
+            if ($parsedDate === false) {
+                jsonResponse(false, null, 'Neplatný formát datumu.');
+            }
+            $expenseDate = $parsedDate->format('Y-m-d H:i:s');
+        }
+
+        // Při editaci CZK výdaje zachovat původní kurz – jinak by se amount_eur
+        // přepočítal aktuálním kurzem a bilance by se nepředvídatelně posunuly.
+        if ($currency === 'CZK') {
+            $rate = (float) ($oldData['exchange_rate'] ?? 0);
+            if ($rate <= 0) $rate = getExchangeRate();
+            $amountEur = round($amount / $rate, 2);
+        } else {
+            $rate = getExchangeRate();
+            $amountEur = $amount;
+        }
 
         $count = count($splitUsers);
         $perPerson = floor($amountEur / $count * 100) / 100;

@@ -85,6 +85,14 @@ switch ($action) {
             jsonResponse(false, null, 'Neplatné údaje.');
         }
 
+        // Ověřit že položka patří lodi přihlášeného uživatele
+        $check = $db->prepare("SELECT boat_id FROM shopping_items WHERE id = ?");
+        $check->execute([$id]);
+        $item = $check->fetch();
+        if (!$item || (currentBoatId() !== null && $item['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
+        }
+
         $stmt = $db->prepare("
             UPDATE shopping_items SET item_name = ?, quantity = ?, category = ?, assigned_to = ?, price = ?, currency = ?, note = ?
             WHERE id = ?
@@ -104,6 +112,14 @@ switch ($action) {
             jsonResponse(false, null, 'Neplatná položka.');
         }
 
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM shopping_items WHERE id = ?");
+        $check->execute([$id]);
+        $item = $check->fetch();
+        if (!$item || (currentBoatId() !== null && $item['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
+        }
+
         $stmt = $db->prepare("UPDATE shopping_items SET is_bought = ?, bought_by = ?, price = COALESCE(?, price) WHERE id = ?");
         $stmt->execute([$isBought, $isBought ? currentUserId() : null, $price, $id]);
 
@@ -115,6 +131,14 @@ switch ($action) {
         $id = (int) ($_POST['id'] ?? 0);
         if ($id < 1) {
             jsonResponse(false, null, 'Neplatná položka.');
+        }
+
+        // Ověřit vlastnictví
+        $check = $db->prepare("SELECT boat_id FROM shopping_items WHERE id = ?");
+        $check->execute([$id]);
+        $item = $check->fetch();
+        if (!$item || (currentBoatId() !== null && $item['boat_id'] !== currentBoatId())) {
+            jsonResponse(false, null, 'Přístup odepřen.');
         }
 
         $db->prepare("DELETE FROM shopping_items WHERE id = ?")->execute([$id]);

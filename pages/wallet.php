@@ -20,13 +20,17 @@ renderHeader('Pokladna', 'wallet');
 ?>
 
 <div class="d-flex-between mb-2">
-    <h1 class="page-title" style="margin-bottom: 0;">&#128176; Pokladna</h1>
-    <button class="btn btn-success" onclick="openAddExpenseModal()">+ Přidat výdaj</button>
+    <h1 class="page-title" style="margin-bottom: 0;">
+        <i data-lucide="wallet" class="page-title-icon"></i>Pokladna
+    </h1>
+    <button class="btn btn-success desktop-only-btn" onclick="openAddExpenseModal()">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Přidat výdaj
+    </button>
 </div>
 
 <!-- Statistiky nahoře -->
-<div class="card-grid" style="grid-template-columns: 1fr;">
-    <div class="stat-card accent">
+<div class="wallet-stats-row">
+    <div class="stat-card brand">
         <div class="stat-card-value" id="totalExpenses">–</div>
         <div class="stat-card-label">Celkové výdaje</div>
     </div>
@@ -34,8 +38,9 @@ renderHeader('Pokladna', 'wallet');
         <div class="stat-card-value" id="myBalance">–</div>
         <div class="stat-card-label">Moje bilance</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-card-value text-sm" id="exchangeRate">–</div>
+    <div class="stat-card info">
+        <div class="stat-card-value text-sm" id="exchangeRate" style="font-size:1rem;">–</div>
+        <div class="stat-card-label">Kurz EUR/CZK</div>
     </div>
 </div>
 
@@ -49,20 +54,22 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Výdaje -->
 <div class="tab-panel active" id="tab-expenses" data-tab-panel="wallet">
     <!-- Filtr -->
-    <div class="mb-2">
-        <select class="form-control" id="expenseFilter" onchange="loadExpenses()" style="max-width: 200px; display: inline-block;">
+    <div class="expense-filter-row mb-2">
+        <select class="form-control" id="expenseFilter" onchange="loadExpenses()">
             <option value="all">Všechny výdaje</option>
             <option value="mine">Jen moje</option>
             <?php foreach ($boats as $b): ?>
                 <option value="boat<?= $b['id'] ?>"><?= e($b['name']) ?></option>
             <?php endforeach; ?>
         </select>
-        <a href="/api/export.php" class="btn btn-outline btn-sm" style="margin-left: 8px;" target="_blank">&#128196; Export PDF</a>
+        <a href="/api/export.php" class="btn btn-outline btn-sm" target="_blank">
+            <i data-lucide="file-text" style="width:14px;height:14px;"></i> Export
+        </a>
     </div>
 
-    <div class="card" id="expensesList" style="position: relative; padding: 0;">
+    <div id="expensesList" style="position: relative;">
         <div id="expensesBody">
-            <p class="text-center text-muted" style="padding: 16px;">Načítám...</p>
+            <p class="text-center text-muted" style="padding: 32px;">Načítám...</p>
         </div>
     </div>
 </div>
@@ -70,20 +77,8 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Bilance -->
 <div class="tab-panel" id="tab-balances" data-tab-panel="wallet">
     <div class="card" id="balancesCard">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Jméno</th>
-                        <th class="text-right">Zaplatil</th>
-                        <th class="text-right">Jeho podíl</th>
-                        <th class="text-right">Bilance</th>
-                    </tr>
-                </thead>
-                <tbody id="balancesBody">
-                    <tr><td colspan="4" class="text-center text-muted">Načítám...</td></tr>
-                </tbody>
-            </table>
+        <div id="balancesBody">
+            <p class="text-center text-muted" style="padding:24px;">Načítám...</p>
         </div>
     </div>
 </div>
@@ -91,16 +86,24 @@ renderHeader('Pokladna', 'wallet');
 <!-- Panel: Vyrovnání -->
 <div class="tab-panel" id="tab-settlements" data-tab-panel="wallet">
     <div class="card">
-        <div class="card-header">Optimalizované vyrovnání</div>
+        <div class="card-header" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="arrow-right-left" style="width:16px;height:16px;color:var(--color-brand);"></i>
+            Optimalizované vyrovnání
+        </div>
         <div id="settlementsList">
             <p class="text-muted">Načítám...</p>
         </div>
     </div>
 </div>
 
+<!-- FAB pro mobil -->
+<button class="fab" onclick="openAddExpenseModal()" title="Přidat výdaj">
+    <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
+
 <!-- Modal: Přidat/Editovat výdaj -->
 <div class="modal-overlay" id="expenseModal">
-    <div class="modal" style="max-width: 600px;">
+    <div class="modal modal-lg">
         <div class="modal-header">
             <h3 class="modal-title" id="expenseModalTitle">Přidat výdaj</h3>
             <button class="modal-close" onclick="closeModal('expenseModal')">&times;</button>
@@ -124,7 +127,7 @@ renderHeader('Pokladna', 'wallet');
                 </div>
                 <div class="form-group">
                     <label class="form-label">Měna</label>
-                    <div style="display: flex; gap: 16px; padding-top: 8px;">
+                    <div class="currency-options">
                         <label class="form-check"><input type="radio" name="exp-currency" value="EUR" checked> EUR</label>
                         <label class="form-check"><input type="radio" name="exp-currency" value="CZK"> CZK</label>
                     </div>
@@ -142,28 +145,34 @@ renderHeader('Pokladna', 'wallet');
                 </div>
             </div>
 
-            <!-- ZA KOHO – celý seznam bez scrollu -->
+            <!-- ZA KOHO – kolapsovatelná sekce -->
             <div class="form-group">
                 <label class="form-label">Za koho (kdo se podílí) *</label>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                    <?php foreach ($boats as $b): ?>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="selectBoatUsers(<?= $b['id'] ?>)"><?= e($b['name']) ?></button>
-                    <?php endforeach; ?>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="selectAllUsers()">Všichni</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="clearUsers()">Nikdo</button>
+                <div class="split-users-toggle" onclick="toggleSplitUsers()">
+                    <span>Vybrat účastníky <span class="split-users-toggle-count" id="splitUsersCount">0 vybráno</span></span>
+                    <i data-lucide="chevron-down" class="split-users-toggle-chevron" id="splitUsersChevron" style="width:18px;height:18px;"></i>
                 </div>
-                <div id="splitUsersCheckboxes" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px;">
-                    <?php foreach ($boats as $b):
-                        $boatUsers = getUsersByBoat($b['id']);
-                    ?>
-                        <div class="text-sm fw-semi text-muted mb-1" style="margin-top: 6px;"><?= e($b['name']) ?>:</div>
-                        <?php foreach ($boatUsers as $u): ?>
-                            <label class="form-check" style="padding: 3px 0;">
-                                <input type="checkbox" class="split-user-cb" value="<?= $u['id'] ?>" data-boat="<?= $b['id'] ?>">
-                                <?= e($u['name']) ?>
-                            </label>
+                <div class="split-users-panel" id="splitUsersPanel">
+                    <div class="split-boat-buttons">
+                        <?php foreach ($boats as $b): ?>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="selectBoatUsers(<?= $b['id'] ?>)"><?= e($b['name']) ?></button>
                         <?php endforeach; ?>
-                    <?php endforeach; ?>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="selectAllUsers()">Všichni</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="clearUsers()">Nikdo</button>
+                    </div>
+                    <div id="splitUsersCheckboxes" class="split-checkboxes">
+                        <?php foreach ($boats as $b):
+                            $boatUsers = getUsersByBoat($b['id']);
+                        ?>
+                            <div class="text-sm fw-semi text-muted mb-1 split-boat-label"><?= e($b['name']) ?>:</div>
+                            <?php foreach ($boatUsers as $u): ?>
+                                <label class="form-check">
+                                    <input type="checkbox" class="split-user-cb" value="<?= $u['id'] ?>" data-boat="<?= $b['id'] ?>" onchange="updateSplitUsersCount()">
+                                    <?= e($u['name']) ?>
+                                </label>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -187,30 +196,7 @@ renderHeader('Pokladna', 'wallet');
     </div>
 </div>
 
-<style>
-.amount-pill {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    line-height: 1.6;
-}
-.amount-pill-eur {
-    background: var(--primary);
-    color: #fff;
-}
-.amount-pill-czk {
-    background: #276749;
-    color: #fff;
-}
-.amount-pill-sub {
-    font-size: 0.72rem;
-    color: var(--gray-500);
-    margin-right: 6px;
-}
-</style>
+
 
 <script>
 const currentUserId = <?= json_encode($userId) ?>;
@@ -218,6 +204,24 @@ const usersByBoat = <?= json_encode($usersByBoat) ?>;
 const allUsers = <?= json_encode(array_map(fn($u) => ['id' => $u['id'], 'name' => $u['name']], $users)) ?>;
 let editingExpenseId = null;
 let currentRate = 25;
+
+// Ikony dle kategorie výdaje
+const categoryIcons = {
+    'fuel':     'fuel',
+    'food':     'utensils',
+    'marina':   'anchor',
+    'shopping': 'shopping-bag',
+    'other':    'circle-dot',
+    'alcohol':  'wine',
+    'transport':'bus',
+    'activity': 'zap',
+};
+
+function getCategoryIcon(cat) {
+    return categoryIcons[cat] || 'circle-dot';
+}
+
+// getInitials() je definováno globálně v app.js
 
 // ============================================================
 // NAČTENÍ VÝDAJŮ
@@ -240,31 +244,57 @@ async function loadExpenses() {
     const expenses = res.data.expenses;
     const expensesBody = document.getElementById('expensesBody');
     if (expenses.length === 0) {
-        expensesBody.innerHTML = '<p class="text-center text-muted" style="padding: 16px;">Žádné výdaje.</p>';
+        expensesBody.innerHTML = '<div class="empty-state"><i data-lucide="wallet" style="width:40px;height:40px;color:var(--color-text-tertiary);margin-bottom:8px;"></i><p>Žádné výdaje.</p></div>'; lucide.createIcons();
     } else {
-        const expensesBody = document.getElementById('expensesBody');
         expensesBody.innerHTML = expenses.map(e => {
             const p = e.expense_date.split(/[- :]/);
-            const datum = parseInt(p[2]) + '. ' + parseInt(p[1]) + '. ' + p[3] + ':' + p[4];
+            const datum = parseInt(p[2]) + '. ' + parseInt(p[1]) + '. ' + p[0];
             const pillClass = e.currency === 'CZK' ? 'amount-pill-czk' : 'amount-pill-eur';
             const castka = (e.currency === 'CZK' ? `<span class="amount-pill-sub">(${formatMoney(e.amount_eur)})</span>` : '')
                 + `<span class="amount-pill ${pillClass}">${formatMoney(e.amount, e.currency)}</span>`;
-            return `<div style="padding: 6px 14px; border-bottom: 1px solid #cbd5e0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:600;">${escapeHtml(e.paid_by_name)}</span>
-                    <span style="display:flex; gap:3px;">
-                        <button class="btn btn-outline btn-sm" onclick="editExpense(${e.id})">&#9998;</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">&#10005;</button>
-                        <button class="btn btn-outline btn-sm" onclick="showAudit(${e.id})" title="Historie">&#128340;</button>
-                    </span>
+            const catIcon = getCategoryIcon(e.category || 'other');
+            const photoThumb = e.photo
+                ? `<img src="${escapeHtml(e.photo)}" onclick="openPhotoModal('${escapeHtml(e.photo)}')" class="expense-card-photo">`
+                : `<button class="icon-btn" onclick="triggerPhotoUpload(${e.id})" title="Přidat fotku">
+                       <i data-lucide="camera" style="width:15px;height:15px;"></i>
+                   </button>`;
+            const avatarHtml = e.paid_by_avatar
+                ? `<img src="/${escapeHtml(e.paid_by_avatar)}" onclick="openMemberModal(${e.paid_by})" class="expense-card-avatar-img">`
+                : `<span onclick="openMemberModal(${e.paid_by})" class="expense-card-avatar" style="cursor:pointer;">${escapeHtml(getInitials(e.paid_by_name))}</span>`;
+            return `<div class="expense-card">
+                <div class="expense-card-header">
+                    <div class="expense-card-who">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            ${avatarHtml}
+                            <div>
+                                <div class="fw-semi">${escapeHtml(e.paid_by_name)}</div>
+                                <div class="text-sm text-muted">${datum}</div>
+                            </div>
+                        </div>
+                        <span style="width:28px;height:28px;border-radius:8px;background:var(--color-bg-muted);display:inline-flex;align-items:center;justify-content:center;" title="${escapeHtml(e.category||'other')}">
+                            <i data-lucide="${catIcon}" style="width:14px;height:14px;color:var(--color-text-secondary);"></i>
+                        </span>
+                    </div>
+                    <div class="expense-card-amount">${castka}</div>
                 </div>
-                <div style="font-size:0.85rem; color:#718096;">${datum}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:#000;">${escapeHtml(e.description)}</span>
-                    <span style="text-align:right;">${castka}</span>
+                <div class="expense-card-footer">
+                    <span class="expense-card-desc">${escapeHtml(e.description)}</span>
+                    <div class="expense-card-actions" style="display:flex;align-items:center;gap:4px;">
+                        ${photoThumb}
+                        <button class="icon-btn" onclick="editExpense(${e.id})" title="Upravit">
+                            <i data-lucide="pencil" style="width:15px;height:15px;"></i>
+                        </button>
+                        <button class="icon-btn icon-btn-danger" onclick="deleteExpense(${e.id})" title="Smazat">
+                            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+                        </button>
+                        <button class="icon-btn" onclick="showAudit(${e.id})" title="Historie">
+                            <i data-lucide="clock" style="width:15px;height:15px;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>`;
         }).join('');
+        lucide.createIcons();
     }
 
     loadMyBalance();
@@ -278,7 +308,7 @@ async function loadMyBalance() {
             const bal = me.balance;
             document.getElementById('myBalance').textContent = (bal >= 0 ? '+' : '') + formatMoney(bal);
             document.getElementById('myBalance').className = 'stat-card-value ' + (bal >= 0 ? 'balance-positive' : 'balance-negative');
-            document.getElementById('myBalanceCard').style.borderTop = '4px solid ' + (bal >= 0 ? 'var(--success)' : 'var(--danger)');
+            document.getElementById('myBalanceCard').className = 'stat-card ' + (bal >= 0 ? 'positive' : 'negative');
         }
     }
 }
@@ -298,17 +328,25 @@ async function loadBalances() {
     const res = await apiCall('/api/wallet.php?action=balances');
     if (!res.success) return;
 
-    const tbody = document.getElementById('balancesBody');
-    tbody.innerHTML = res.data.map(b => `
-        <tr>
-            <td class="fw-semi">${escapeHtml(b.name).replace(' ', '<br>')}</td>
-            <td class="text-right">${formatMoney(b.paid)}</td>
-            <td class="text-right">${formatMoney(b.share)}</td>
-            <td class="text-right fw-bold ${b.balance >= 0 ? 'balance-positive' : 'balance-negative'}">
-                ${(b.balance >= 0 ? '+' : '') + formatMoney(b.balance)}
-            </td>
-        </tr>
-    `).join('');
+    const maxPaid = Math.max(...res.data.map(b => b.paid), 1);
+    const container = document.getElementById('balancesBody');
+    container.innerHTML = res.data.map(b => {
+        const pct = Math.min(100, Math.round(b.paid / maxPaid * 100));
+        const isPos = b.balance >= 0;
+        const balStr = (isPos ? '+' : '') + formatMoney(b.balance);
+        const initials = getInitials(b.name);
+        return `<div class="balance-row">
+            <span class="avatar avatar-md avatar-${b.boat_id == 2 ? 'boat2' : 'boat1'}">${escapeHtml(initials)}</span>
+            <div class="balance-row-info">
+                <div class="balance-row-name">${escapeHtml(b.name)}</div>
+                <div class="balance-row-sub">zaplatil ${formatMoney(b.paid)} · podíl ${formatMoney(b.share)}</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill ${isPos ? 'success' : 'danger'}" style="width:${pct}%;"></div>
+                </div>
+            </div>
+            <div class="balance-row-amount ${isPos ? 'balance-positive' : 'balance-negative'}">${balStr}</div>
+        </div>`;
+    }).join('');
 }
 
 // ============================================================
@@ -323,27 +361,29 @@ async function loadSettlements() {
     const rate = res.data.rate;
 
     if (settlements.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>Všechny účty jsou vyrovnané!</p></div>';
+        container.innerHTML = '<div class="empty-state"><i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--color-success);margin-bottom:8px;"></i><p>Všechny účty jsou vyrovnané!</p></div>';
+        lucide.createIcons();
     } else {
         container.innerHTML = settlements.map(s => {
-            const settledClass = s.settled ? 'opacity: 0.4; text-decoration: line-through;' : '';
-            const settledBtnText = s.settled ? 'Zrušit' : 'Vyrovnáno';
+            const settledStyle = s.settled ? 'opacity:0.45;' : '';
+            const settledBtnText = s.settled ? 'Zrušit' : 'Hotovo';
             const settledBtnClass = s.settled ? 'btn-outline' : 'btn-success';
-            return `<div class="settlement-item" style="${settledClass}">
-                <div style="flex: 1;">
-                    <div>
-                        <span class="fw-semi">${escapeHtml(s.from_name)}</span>
-                        <span class="settlement-arrow">&rarr;</span>
-                        <span class="fw-semi">${escapeHtml(s.to_name)}</span>
-                    </div>
-                    <div class="mt-1">
-                        <span class="fw-bold text-accent">${formatMoney(s.amount)}</span>
-                        <span class="text-muted text-sm" style="margin-left: 8px;">(${formatMoney(s.amount_czk, 'CZK')})</span>
-                    </div>
+            return `<div class="settlement-item-v2" style="${settledStyle}">
+                <span class="avatar avatar-sm avatar-primary">${escapeHtml(getInitials(s.from_name))}</span>
+                <i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--color-brand);flex-shrink:0;"></i>
+                <span class="avatar avatar-sm avatar-primary">${escapeHtml(getInitials(s.to_name))}</span>
+                <div class="settlement-names">
+                    <div class="settlement-from">${escapeHtml(s.from_name)}</div>
+                    <div class="settlement-to">→ ${escapeHtml(s.to_name)}</div>
+                </div>
+                <div class="settlement-amount">
+                    <div>${formatMoney(s.amount)}</div>
+                    <div style="font-size:0.75rem;color:var(--color-text-secondary);font-weight:500;">${formatMoney(s.amount_czk, 'CZK')}</div>
                 </div>
                 <button class="btn ${settledBtnClass} btn-sm" onclick="toggleSettle(${s.from_id}, ${s.to_id}, ${s.settled ? 0 : 1})">${settledBtnText}</button>
             </div>`;
         }).join('');
+        lucide.createIcons();
     }
 }
 
@@ -376,6 +416,12 @@ function openAddExpenseModal() {
     const _pad = n => String(n).padStart(2, '0');
     document.getElementById('exp-date').value = _now.getFullYear() + '-' + _pad(_now.getMonth()+1) + '-' + _pad(_now.getDate()) + 'T' + _pad(_now.getHours()) + ':' + _pad(_now.getMinutes());
     clearUsers(); // Všichni ODKLIKNUTI – uživatel si sám zaškrtne
+    // Collapse the split users panel for new expense
+    const _panel = document.getElementById('splitUsersPanel');
+    const _chevron = document.getElementById('splitUsersChevron');
+    if (_panel) _panel.classList.remove('open');
+    if (_chevron) _chevron.classList.remove('open');
+    updateSplitUsersCount();
     openModal('expenseModal');
 }
 
@@ -403,6 +449,12 @@ async function editExpense(id) {
             if (cb) cb.checked = true;
         });
     }
+    // Auto-open split panel when editing (users are already checked)
+    const _panel = document.getElementById('splitUsersPanel');
+    const _chevron = document.getElementById('splitUsersChevron');
+    if (_panel) _panel.classList.add('open');
+    if (_chevron) _chevron.classList.add('open');
+    updateSplitUsersCount();
 
     openModal('expenseModal');
 }
@@ -453,15 +505,16 @@ async function saveExpense() {
     }
 }
 
-async function deleteExpense(id) {
-    if (!confirm('Opravdu smazat tento výdaj?')) return;
-    const res = await apiCall('/api/wallet.php?action=delete', 'POST', { id: id });
-    if (res.success) {
-        showToast('Výdaj smazán.', 'success');
-        loadExpenses();
-    } else {
-        showToast(res.error || 'Chyba.', 'error');
-    }
+function deleteExpense(id) {
+    confirmAction('Opravdu smazat tento výdaj?', async function() {
+        const res = await apiCall('/api/wallet.php?action=delete', 'POST', { id: id });
+        if (res.success) {
+            showToast('Výdaj smazán.', 'success');
+            loadExpenses();
+        } else {
+            showToast(res.error || 'Chyba.', 'error');
+        }
+    });
 }
 
 async function showAudit(expenseId) {
@@ -475,7 +528,7 @@ async function showAudit(expenseId) {
         container.innerHTML = '<p class="text-muted">Žádná historie.</p>';
     } else {
         container.innerHTML = res.data.map(log => `
-            <div style="border-bottom: 1px solid var(--gray-100); padding: 10px 0;">
+            <div style="border-bottom: 1px solid var(--color-border); padding: 10px 0;">
                 <div class="d-flex-between">
                     <span class="badge ${log.change_type === 'deleted' ? 'badge-danger' : log.change_type === 'edited' ? 'badge-accent' : 'badge-success'}">
                         ${changeTypeNames[log.change_type] || log.change_type}
@@ -496,18 +549,94 @@ function selectBoatUsers(boatId) {
     document.querySelectorAll('.split-user-cb').forEach(cb => {
         if (parseInt(cb.dataset.boat) === boatId) cb.checked = true;
     });
+    updateSplitUsersCount();
 }
 
 function selectAllUsers() {
     document.querySelectorAll('.split-user-cb').forEach(cb => cb.checked = true);
+    updateSplitUsersCount();
 }
 
 function clearUsers() {
     document.querySelectorAll('.split-user-cb').forEach(cb => cb.checked = false);
+    updateSplitUsersCount();
 }
 
 function getSelectedUsers() {
     return Array.from(document.querySelectorAll('.split-user-cb:checked')).map(cb => parseInt(cb.value));
+}
+
+function toggleSplitUsers() {
+    const panel = document.getElementById('splitUsersPanel');
+    const chevron = document.getElementById('splitUsersChevron');
+    panel.classList.toggle('open');
+    chevron.classList.toggle('open');
+}
+
+function updateSplitUsersCount() {
+    const count = document.querySelectorAll('.split-user-cb:checked').length;
+    const el = document.getElementById('splitUsersCount');
+    if (el) el.textContent = count + ' vybráno';
+}
+
+// ============================================================
+// FOTO K VÝDAJI
+// ============================================================
+
+let _photoUploadExpenseId = null;
+
+function triggerPhotoUpload(expenseId) {
+    _photoUploadExpenseId = expenseId;
+    let inp = document.getElementById('expensePhotoInput');
+    if (!inp) {
+        inp = document.createElement('input');
+        inp.type = 'file';
+        inp.id = 'expensePhotoInput';
+        inp.accept = 'image/jpeg,image/png,image/webp,image/heic';
+        inp.style.display = 'none';
+        inp.onchange = uploadExpensePhoto;
+        document.body.appendChild(inp);
+    }
+    inp.value = '';
+    inp.click();
+}
+
+async function uploadExpensePhoto() {
+    const inp = document.getElementById('expensePhotoInput');
+    if (!inp || !inp.files[0]) return;
+    const formData = new FormData();
+    formData.append('photo', inp.files[0]);
+    formData.append('expense_id', _photoUploadExpenseId);
+    formData.append('csrf_token', getCsrfToken());
+    try {
+        const res = await fetch('/api/expense_photo.php?action=upload', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData,
+        });
+        const json = await res.json();
+        if (json.success) {
+            showToast('Fotka přidána.', 'success');
+            loadExpenses();
+        } else {
+            showToast(json.error || 'Chyba nahrávání.', 'error');
+        }
+    } catch (e) {
+        showToast('Chyba připojení.', 'error');
+    }
+}
+
+function openPhotoModal(src) {
+    let overlay = document.getElementById('photoLightbox');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'photoLightbox';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+        overlay.onclick = () => overlay.remove();
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `<img src="${escapeHtml(src)}" style="max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px;">`;
+    document.body.appendChild(overlay);
 }
 
 // ============================================================

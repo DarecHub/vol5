@@ -104,24 +104,35 @@ $tripName = getSetting('trip_name', 'Plavba');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($tripName) ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script>
+    (function(){
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+    })();
+    </script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: system-ui, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #1a365d 100%);
+            font-family: var(--font-sans);
+            background: var(--color-bg-subtle);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            color: var(--color-text);
         }
         .login-container {
-            background: white;
-            border-radius: 20px;
+            background: var(--color-bg);
+            border-radius: var(--radius-lg);
             padding: 40px 35px;
             max-width: 420px;
             width: 100%;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--color-border);
         }
         .logo {
             text-align: center;
@@ -129,14 +140,14 @@ $tripName = getSetting('trip_name', 'Plavba');
             font-size: 3.5rem;
         }
         h1 {
-            color: #1a365d;
+            color: var(--color-text);
             text-align: center;
             margin-bottom: 28px;
             font-size: 1.5rem;
         }
         .trip-name {
             text-align: center;
-            color: #d69e2e;
+            color: var(--color-brand);
             font-weight: 600;
             margin-bottom: 25px;
             font-size: 0.95rem;
@@ -145,9 +156,9 @@ $tripName = getSetting('trip_name', 'Plavba');
             display: flex;
             gap: 0;
             margin-bottom: 25px;
-            border-radius: 10px;
+            border-radius: var(--radius);
             overflow: hidden;
-            border: 2px solid #1a365d;
+            border: 1px solid var(--color-border);
         }
         .tab-btn {
             flex: 1;
@@ -156,14 +167,15 @@ $tripName = getSetting('trip_name', 'Plavba');
             cursor: pointer;
             font-weight: 600;
             font-size: 0.95rem;
-            background: white;
-            color: #1a365d;
+            background: var(--color-bg);
+            color: var(--color-text-secondary);
             border: none;
             transition: all 0.2s;
+            font-family: inherit;
         }
         .tab-btn.active {
-            background: #1a365d;
-            color: white;
+            background: var(--color-brand);
+            color: var(--color-brand-text);
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -172,55 +184,57 @@ $tripName = getSetting('trip_name', 'Plavba');
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
-            color: #2d3748;
+            color: var(--color-text);
             font-size: 0.9rem;
         }
         select, input[type="password"] {
             width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
             font-size: 1rem;
             font-family: inherit;
             transition: border-color 0.2s;
-            background: white;
+            background: var(--color-bg);
+            color: var(--color-text);
         }
         select:focus, input:focus {
             outline: none;
-            border-color: #2b6cb0;
+            border-color: var(--color-brand);
+            box-shadow: 0 0 0 3px var(--color-brand-subtle);
         }
         .btn {
             display: block;
             width: 100%;
-            padding: 14px;
-            background: #1a365d;
-            color: white;
+            padding: 12px;
+            background: var(--color-brand);
+            color: var(--color-brand-text);
             border: none;
-            border-radius: 10px;
-            font-size: 1.05rem;
+            border-radius: var(--radius);
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             font-family: inherit;
         }
-        .btn:hover { background: #2b6cb0; }
+        .btn:hover { background: var(--color-brand-hover); }
         .btn-gold {
-            background: #d69e2e;
+            background: var(--color-brand);
         }
-        .btn-gold:hover { background: #b7791f; }
+        .btn-gold:hover { background: var(--color-brand-hover); }
         .error-msg {
-            background: #fed7d7;
-            border: 1px solid #fc8181;
-            color: #c53030;
+            background: var(--color-danger-subtle);
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
             padding: 12px;
-            border-radius: 8px;
+            border-radius: var(--radius);
             margin-bottom: 18px;
             text-align: center;
             font-size: 0.9rem;
         }
         .no-users {
             text-align: center;
-            color: #718096;
+            color: var(--color-text-secondary);
             padding: 20px;
             font-size: 0.9rem;
         }
@@ -236,8 +250,8 @@ $tripName = getSetting('trip_name', 'Plavba');
         <?php endif; ?>
 
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('member')">Posádka</button>
-            <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
+            <button class="tab-btn active" onclick="switchTab('member', this)">Posádka</button>
+            <button class="tab-btn" onclick="switchTab('admin', this)">Admin</button>
         </div>
 
         <!-- Členské přihlášení -->
@@ -267,8 +281,8 @@ $tripName = getSetting('trip_name', 'Plavba');
                         <input type="password" name="member_password" required placeholder="Zadejte společné heslo">
                     </div>
                     <div class="form-group" style="margin-bottom: 14px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer; color:#4a5568;">
-                            <input type="checkbox" name="remember_me" value="1" style="width:auto; accent-color:#1a365d;">
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer; color:var(--color-text-secondary);">
+                            <input type="checkbox" name="remember_me" value="1" style="width:auto; accent-color:var(--color-brand);">
                             Zapamatovat si přihlášení na 7 dní
                         </label>
                     </div>
@@ -292,11 +306,11 @@ $tripName = getSetting('trip_name', 'Plavba');
     </div>
 
     <script>
-    function switchTab(tab) {
+    function switchTab(tab, el) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
-        event.target.classList.add('active');
+        el.classList.add('active');
     }
     </script>
 </body>
